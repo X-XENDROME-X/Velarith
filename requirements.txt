@@ -1,0 +1,54 @@
+# --- Core Framework ---
+flask
+flask-cors
+flask-swagger-ui
+python-dotenv
+werkzeug
+jinja2
+itsdangerous
+click
+blinker
+
+# --- Data & Analysis ---
+numpy
+pandas
+scipy
+ta
+textblob
+nltk
+joblib
+
+# --- Visualization ---
+matplotlib
+pillow
+fonttools
+cycler
+kiwisolver
+contourpy
+
+# --- Web & Networking ---
+requests
+aiohttp
+urllib3
+websockets
+certifi
+charset-normalizer
+idna
+
+# --- Market & Trends ---
+yfinance
+pytrends
+
+# --- Utility / Parsing ---
+beautifulsoup4
+soupsieve
+lxml
+regex
+packaging
+python-dateutil
+pytz
+tzdata
+tqdm
+
+# --- Polymarket CLOB Client (from GitHub) ---
+git+https://github.com/Polymarket/py-clob-client.git

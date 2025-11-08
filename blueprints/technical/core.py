@@ -4,34 +4,31 @@ import numpy as np
 import ta
 from scipy.signal import argrelextrema
 
-# ----------------------------------------------------------
-# Core Computation Layer
-# ----------------------------------------------------------
-
 def fetch_price_data(ticker, period="6mo", interval="1d"):
+    """Fetch OHLCV data safely from Yahoo Finance."""
     try:
         df = yf.download(ticker, period=period, interval=interval, progress=False, auto_adjust=False)
         df.dropna(inplace=True)
         return df
     except Exception as e:
-        print(f"[ERROR] Fetching {ticker}: {e}")
+        print(f"[ERROR] Failed to fetch data for {ticker}: {e}")
         return pd.DataFrame()
 
 def compute_indicators(df: pd.DataFrame):
+    """Compute core technical indicators."""
     df["RSI"] = ta.momentum.RSIIndicator(df["Close"], 14).rsi()
     df["EMA20"] = ta.trend.EMAIndicator(df["Close"], 20).ema_indicator()
     df["EMA50"] = ta.trend.EMAIndicator(df["Close"], 50).ema_indicator()
     df["EMA200"] = ta.trend.EMAIndicator(df["Close"], 200).ema_indicator()
     df["ADX"] = ta.trend.ADXIndicator(df["High"], df["Low"], df["Close"], 14).adx()
     df["ATR"] = ta.volatility.AverageTrueRange(df["High"], df["Low"], df["Close"], 14).average_true_range()
-
     bb = ta.volatility.BollingerBands(df["Close"], 20, 2)
     df["BB_H"], df["BB_L"], df["BB_%"] = bb.bollinger_hband(), bb.bollinger_lband(), bb.bollinger_pband()
-
     df["OBV"] = ta.volume.OnBalanceVolumeIndicator(df["Close"], df["Volume"]).on_balance_volume()
     return df
 
 def find_support_resistance(df, order=10):
+    """Approximate support and resistance levels using local extrema."""
     close = df["Close"]
     max_idx = argrelextrema(close.values, np.greater, order=order)[0]
     min_idx = argrelextrema(close.values, np.less, order=order)[0]
@@ -40,6 +37,7 @@ def find_support_resistance(df, order=10):
     return support, resistance
 
 def get_technical_summary(ticker, period="6mo", interval="1d"):
+    """Return a JSON-safe technical summary dict for AI or frontend."""
     df = fetch_price_data(ticker, period, interval)
     if df.empty:
         return {"error": f"No data for {ticker}"}
@@ -50,6 +48,8 @@ def get_technical_summary(ticker, period="6mo", interval="1d"):
 
     summary = {
         "ticker": ticker.upper(),
+        "close": round(float(last["Close"]), 2),
+        "volume": int(last["Volume"]),
         "rsi": round(float(last["RSI"]), 2),
         "ema20": round(float(last["EMA20"]), 2),
         "ema50": round(float(last["EMA50"]), 2),
@@ -62,19 +62,16 @@ def get_technical_summary(ticker, period="6mo", interval="1d"):
         "obv": round(float(last["OBV"]), 2),
         "support": support,
         "resistance": resistance,
-        "close": round(float(last["Close"]), 2),
-        "volume": int(last["Volume"]),
         "data_points": len(df)
     }
 
-    # Derived interpretations
+    # Derived zones
     summary["momentum"] = "bullish" if summary["ema20"] > summary["ema50"] else "bearish"
     summary["trend_strength"] = "strong" if summary["adx"] >= 25 else "weak"
-    if summary["rsi"] >= 70:
-        summary["zone"] = "overbought"
-    elif summary["rsi"] <= 30:
-        summary["zone"] = "oversold"
-    else:
-        summary["zone"] = "neutral"
+    summary["zone"] = (
+        "overbought" if summary["rsi"] >= 70
+        else "oversold" if summary["rsi"] <= 30
+        else "neutral"
+    )
 
     return summary

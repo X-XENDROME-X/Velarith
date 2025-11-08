@@ -1,0 +1,173 @@
+openapi: 3.0.3
+info:
+  title: Stock Analyzer API
+  version: 1.0.0
+  description: |
+    Backend API for Stock Analyzer — provides AI-powered stock analytics,
+    including technical indicators, sentiment analysis, and macro market context.
+
+servers:
+  - url: http://localhost:10000
+    description: Local development server
+
+paths:
+  /:
+    get:
+      summary: Health check
+      description: Returns API status.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Stock Analyzer API is live.
+
+  /technical/{ticker}:
+    get:
+      summary: Technical Analysis for a Stock
+      description: |
+        Returns computed technical indicators, chart image (base64), 
+        and a quantitative signal (bullish/bearish).
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+          example: AAPL
+      responses:
+        '200':
+          description: Technical indicators for the given ticker
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticker:
+                    type: string
+                    example: AAPL
+                  technical_summary:
+                    type: object
+                    description: Key metrics and indicators
+                  signal_score:
+                    type: number
+                    example: 78
+                  chart_base64:
+                    type: string
+                    description: Base64-encoded PNG chart image
+                    example: "iVBORw0KGgoAAAANSUhEUgAA..."
+        '400':
+          description: Invalid ticker or data fetch failure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No data for AAPL
+
+  /sentiment/{ticker}:
+    get:
+      summary: Aggregated Sentiment Analysis
+      description: |
+        Combines multiple sentiment sources — news, Google Trends, and Polymarket prediction markets.
+        Returns normalized scores (0–100) and an overall composite sentiment.
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+          example: MSFT
+      responses:
+        '200':
+          description: Aggregated sentiment for the given ticker
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticker:
+                    type: string
+                    example: MSFT
+                  sources:
+                    type: object
+                    properties:
+                      news:
+                        type: object
+                        properties:
+                          score:
+                            type: number
+                            example: 72
+                          source:
+                            type: string
+                            example: news
+                      google_trends:
+                        type: object
+                        properties:
+                          score:
+                            type: number
+                            example: 61
+                          source:
+                            type: string
+                            example: google_trends
+                      polymarket:
+                        type: object
+                        properties:
+                          score:
+                            type: number
+                            example: 68
+                          weighted_probability:
+                            type: number
+                            example: 0.66
+                          avg_liquidity:
+                            type: number
+                            example: 35000.5
+                          volatility_score:
+                            type: number
+                            example: 14
+                          source:
+                            type: string
+                            example: polymarket
+                  composite:
+                    type: number
+                    description: Combined weighted sentiment score (0–100)
+                    example: 67
+
+  /macro:
+    get:
+      summary: Macro Market Sentiment
+      description: |
+        Returns market sentiment for key macroeconomic topics such as interest rates, inflation,
+        and government shutdown probabilities (via Polymarket).
+      responses:
+        '200':
+          description: Macro sentiment overview
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    keyword:
+                      type: string
+                      example: interest rates
+                    score:
+                      type: number
+                      example: 74
+                    total_volume:
+                      type: number
+                      example: 89230.4
+                    market_count:
+                      type: integer
+                      example: 3
