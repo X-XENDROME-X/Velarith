@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
-from technicals_blueprints.technical_core import get_technical_summary, compute_indicators, fetch_price_data
-from technicals_blueprints.technical_visuals import plot_technical_chart
-from technicals_blueprints.technical_signal import compute_signal
+from .technical_core import get_technical_summary, compute_indicators, fetch_price_data
+from .technical_visuals import plot_technical_chart
+from .technical_signal import compute_signal
 
 tech_bp = Blueprint("technical", __name__, url_prefix="/technical")
 
@@ -29,3 +29,4 @@ if __name__ == "__main__":
     app = Flask(__name__)
     app.register_blueprint(tech_bp)
     app.run(debug=True, port=5001)
+    
