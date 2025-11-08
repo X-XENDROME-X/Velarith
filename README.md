@@ -79,7 +79,7 @@
 | **Pranjal Shrivastava** | 
 | **Abhinav Ranish** |
 | **Anshuman Yadav** | 
-| **Nmeka** | 
+| **Emeka Ekwenibe** | 
 
 ---
 
@@ -189,7 +189,7 @@ Velarith/
 - `pranjal` - Pranjal's development branch
 - `abhinav` - Abhinav's development branch
 - `anshuman` - Anshuman's development branch
-- `emeka` - Nmeka's development branch
+- `emeka` - Emeka's development branch
 
 ### Commit Convention
 We follow [Conventional Commits](https://www.conventionalcommits.org/):
