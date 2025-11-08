@@ -129,12 +129,12 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Gradient text with logo-inspired colors (bull gold & bear blue) */
+/* Gradient text with logo-inspired colors (cyan/turquoise bull & teal bear) */
 .gradient-text {
-  @apply bg-gradient-to-r from-amber-400 via-primary to-blue-400 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-cyan-400 via-cyan-500 to-teal-500 bg-clip-text text-transparent;
   background-size: 200% auto;
   animation: gradient 3s linear infinite;
-  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4)) drop-shadow(0 0 12px rgba(99, 102, 241, 0.3));
+  filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.5)) drop-shadow(0 0 15px rgba(20, 184, 166, 0.4));
 }
 
 @keyframes gradient {
