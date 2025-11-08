@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use("Agg")  # ✅ non-GUI backend (safe for Flask)
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO

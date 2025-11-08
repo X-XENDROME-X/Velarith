@@ -1,3 +1,4 @@
+from matplotlib import ticker
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -8,6 +9,8 @@ def fetch_price_data(ticker, period="6mo", interval="1d"):
     """Fetch OHLCV data safely from Yahoo Finance."""
     try:
         df = yf.download(ticker, period=period, interval=interval, progress=False, auto_adjust=False)
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.get_level_values(0)  # flatten multi-index
         df.dropna(inplace=True)
         return df
     except Exception as e:
@@ -16,16 +19,33 @@ def fetch_price_data(ticker, period="6mo", interval="1d"):
 
 def compute_indicators(df: pd.DataFrame):
     """Compute core technical indicators."""
-    df["RSI"] = ta.momentum.RSIIndicator(df["Close"], 14).rsi()
-    df["EMA20"] = ta.trend.EMAIndicator(df["Close"], 20).ema_indicator()
-    df["EMA50"] = ta.trend.EMAIndicator(df["Close"], 50).ema_indicator()
-    df["EMA200"] = ta.trend.EMAIndicator(df["Close"], 200).ema_indicator()
-    df["ADX"] = ta.trend.ADXIndicator(df["High"], df["Low"], df["Close"], 14).adx()
-    df["ATR"] = ta.volatility.AverageTrueRange(df["High"], df["Low"], df["Close"], 14).average_true_range()
-    bb = ta.volatility.BollingerBands(df["Close"], 20, 2)
+    # --- Ensure all columns are 1D Series ---
+    close = df["Close"]
+    if isinstance(close, pd.DataFrame):
+        close = close.squeeze()  # flatten (N,1) → (N,)
+
+    high = df["High"].squeeze() if "High" in df else close
+    low = df["Low"].squeeze() if "Low" in df else close
+    volume = df["Volume"].squeeze() if "Volume" in df else None
+
+    # --- Core Indicators ---
+    df["RSI"] = ta.momentum.RSIIndicator(close, 14).rsi()
+    df["EMA20"] = ta.trend.EMAIndicator(close, 20).ema_indicator()
+    df["EMA50"] = ta.trend.EMAIndicator(close, 50).ema_indicator()
+    df["EMA200"] = ta.trend.EMAIndicator(close, 200).ema_indicator()
+    df["ADX"] = ta.trend.ADXIndicator(high, low, close, 14).adx()
+    df["ATR"] = ta.volatility.AverageTrueRange(high, low, close, 14).average_true_range()
+
+    bb = ta.volatility.BollingerBands(close, 20, 2)
     df["BB_H"], df["BB_L"], df["BB_%"] = bb.bollinger_hband(), bb.bollinger_lband(), bb.bollinger_pband()
-    df["OBV"] = ta.volume.OnBalanceVolumeIndicator(df["Close"], df["Volume"]).on_balance_volume()
+
+    if volume is not None:
+        df["OBV"] = ta.volume.OnBalanceVolumeIndicator(close, volume).on_balance_volume()
+    else:
+        df["OBV"] = np.nan
+
     return df
+
 
 def find_support_resistance(df, order=10):
     """Approximate support and resistance levels using local extrema."""
