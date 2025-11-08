@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { cn } from "@/lib/utils/cn";
 import {
   LayoutDashboard,
@@ -9,7 +10,6 @@ import {
   MessageSquare,
   BarChart3,
   Settings,
-  Sparkles,
 } from "lucide-react";
 
 const navigation = [
@@ -25,8 +25,14 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-64 flex-col fixed left-0 top-0 border-r border-border bg-card">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b border-border px-6">
-        <Sparkles className="h-6 w-6 text-primary" />
+      <div className="flex h-16 items-center gap-3 border-b border-border px-6">
+        <Image
+          src="/tlogo.png"
+          alt="Velarith Logo"
+          width={40}
+          height={40}
+          className="object-contain"
+        />
         <span className="text-xl font-bold gradient-text">Velarith</span>
       </div>
 
