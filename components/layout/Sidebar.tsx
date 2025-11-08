@@ -27,7 +27,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-border px-6">
         <Image
-          src="/tlogo.png"
+          src="/images/tlogo.png"
           alt="Velarith Logo"
           width={40}
           height={40}

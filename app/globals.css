@@ -129,11 +129,12 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Gradient text */
+/* Gradient text with logo-inspired colors (bull gold & bear blue) */
 .gradient-text {
-  @apply bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-amber-400 via-primary to-blue-400 bg-clip-text text-transparent;
   background-size: 200% auto;
   animation: gradient 3s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4)) drop-shadow(0 0 12px rgba(99, 102, 241, 0.3));
 }
 
 @keyframes gradient {
