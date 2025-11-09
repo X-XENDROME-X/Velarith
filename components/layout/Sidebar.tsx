@@ -140,158 +140,145 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-  <nav className="flex-1 px-4 lg:px-4 py-6 lg:py-8 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           {navigation.map((item, index) => {
             const isActive = pathname === item.href;
+            const showLabel = isHovered || isMobileOpen || isMobile;
+            
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-4 rounded-2xl px-4 lg:px-5 py-4 lg:py-4.5 text-sm lg:text-base font-medium transition-all duration-500 ease-out relative group overflow-hidden",
+                  "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 relative group overflow-hidden",
                   isActive
-                    ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-2xl shadow-indigo-500/50 scale-[1.02]"
-                    : "text-gray-400 hover:text-white hover:bg-white/10 hover:scale-[1.02]",
-                  !(isHovered || isMobileOpen) && !isMobile && "justify-center px-3 lg:px-4"
+                    ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/30"
+                    : "text-gray-400 hover:text-white hover:bg-white/10",
+                  !showLabel && "justify-center"
                 )}
                 style={{
-                  animationDelay: `${index * 75}ms`,
-                  transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+                  animationDelay: `${index * 50}ms`,
                 }}
               >
-                {/* Animated background layers for active state */}
+                {/* Animated background for active state */}
                 {isActive && (
-                  <>
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/50 via-purple-500/50 to-cyan-500/50 blur-xl animate-pulse" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/0 via-white/30 to-cyan-400/0 animate-shimmer" />
-                  </>
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/30 via-purple-500/30 to-cyan-500/30 blur-lg animate-pulse" />
                 )}
                 
-                {/* Icon with enhanced animations */}
+                {/* Icon */}
                 <div className={cn(
-                  "relative z-10 transition-all duration-500 ease-out",
+                  "relative z-10 flex-shrink-0 transition-transform duration-300",
                   isActive && "scale-110",
-                  !isActive && "group-hover:scale-125 group-hover:rotate-12"
+                  !isActive && "group-hover:scale-110"
                 )}>
-                  <item.icon 
-                    className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0 drop-shadow-lg" 
-                  />
+                  <item.icon className="h-5 w-5 drop-shadow-lg" />
                 </div>
                 
-                {/* Label with smooth transition */}
-                {(isHovered || isMobileOpen || isMobile) && (
-                  <span className={cn(
-                    "whitespace-nowrap relative z-10 font-semibold transition-all duration-500 ease-out",
-                    (isHovered || isMobileOpen) && "animate-in slide-in-from-left-5 duration-500"
-                  )}>
+                {/* Label */}
+                {showLabel && (
+                  <span className="relative z-10 font-semibold truncate">
                     {item.name}
                   </span>
                 )}
                 
-                {/* Active indicator with staggered animation */}
-                {isActive && (isHovered || isMobileOpen || isMobile) && (
-                  <div className="ml-auto relative z-10 flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-white shadow-lg shadow-white/50 animate-pulse" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/70 animate-pulse delay-150" />
-                    <div className="w-1 h-1 rounded-full bg-white/50 animate-pulse delay-300" />
+                {/* Active indicator */}
+                {isActive && showLabel && (
+                  <div className="ml-auto relative z-10 flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm animate-pulse" />
+                    <div className="w-1 h-1 rounded-full bg-white/70 animate-pulse delay-150" />
                   </div>
                 )}
                 
-                {/* Hover glow effect */}
+                {/* Hover glow */}
                 {!isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/20 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 )}
               </Link>
             );
           })}
         </nav>
 
-        {/* Settings with enhanced styling */}
-        <div className="border-t border-white/5 px-3 lg:px-4 py-4 lg:py-5 space-y-3">
+        {/* Settings & Login */}
+        <div className="border-t border-white/5 px-3 py-4 space-y-2">
           <Link
             href="/settings"
             className={cn(
-              "flex items-center gap-4 rounded-2xl px-4 lg:px-5 py-4 lg:py-4.5 text-sm lg:text-base font-medium transition-all duration-500 ease-out relative group overflow-hidden",
+              "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 relative group overflow-hidden",
               isSettingsActive
-                ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-2xl shadow-indigo-500/50 scale-[1.02]"
-                : "text-gray-400 hover:text-white hover:bg-white/10 hover:scale-[1.02]",
-              !(isHovered || isMobileOpen) && !isMobile && "justify-center px-3 lg:px-4"
+                ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/30"
+                : "text-gray-400 hover:text-white hover:bg-white/10",
+              !(isHovered || isMobileOpen || isMobile) && "justify-center"
             )}
           >
-            {/* Icon with smooth rotation animation */}
+            {/* Icon */}
             <div
               className={cn(
-                "relative z-10 transition-all duration-700 ease-out",
-                isSettingsActive ? "scale-110" : "group-hover:rotate-180 group-hover:scale-125"
+                "relative z-10 flex-shrink-0 transition-all duration-500",
+                isSettingsActive ? "scale-110" : "group-hover:rotate-90 group-hover:scale-110"
               )}
             >
-              <Settings className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0 drop-shadow-lg" />
+              <Settings className="h-5 w-5 drop-shadow-lg" />
             </div>
 
+            {/* Label */}
             {(isHovered || isMobileOpen || isMobile) && (
-              <span
-                className={cn(
-                  "font-semibold transition-all duration-500 ease-out",
-                  (isHovered || isMobileOpen) && "animate-in slide-in-from-left-5 duration-500"
-                )}
-              >
+              <span className="relative z-10 font-semibold truncate">
                 Settings
               </span>
             )}
 
+            {/* Active indicator */}
             {isSettingsActive && (isHovered || isMobileOpen || isMobile) && (
-              <div className="ml-auto relative z-10 flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-white shadow-lg shadow-white/50 animate-pulse" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white/70 animate-pulse delay-150" />
-                <div className="w-1 h-1 rounded-full bg-white/50 animate-pulse delay-300" />
+              <div className="ml-auto relative z-10 flex items-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm animate-pulse" />
+                <div className="w-1 h-1 rounded-full bg-white/70 animate-pulse delay-150" />
               </div>
             )}
 
+            {/* Hover glow */}
             {!isSettingsActive && (
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-500/0 via-gray-400/20 to-gray-500/0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out" />
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-500/0 via-gray-400/10 to-gray-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             )}
           </Link>
 
           <Link
             href="/login"
             className={cn(
-              "flex items-center gap-4 rounded-2xl px-4 lg:px-5 py-4 lg:py-4.5 text-sm lg:text-base font-medium transition-all duration-500 ease-out relative group overflow-hidden",
+              "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 relative group overflow-hidden",
               isLoginActive
-                ? "bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 text-white shadow-2xl shadow-cyan-500/40 scale-[1.02]"
-                : "text-gray-400 hover:text-white hover:bg-white/10 hover:scale-[1.02]",
-              !(isHovered || isMobileOpen) && !isMobile && "justify-center px-3 lg:px-4"
+                ? "bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 text-white shadow-lg shadow-cyan-500/30"
+                : "text-gray-400 hover:text-white hover:bg-white/10",
+              !(isHovered || isMobileOpen || isMobile) && "justify-center"
             )}
           >
+            {/* Icon */}
             <div
               className={cn(
-                "relative z-10 transition-all duration-700 ease-out",
-                isLoginActive ? "scale-110" : "group-hover:rotate-6 group-hover:scale-115"
+                "relative z-10 flex-shrink-0 transition-transform duration-300",
+                isLoginActive ? "scale-110" : "group-hover:scale-110"
               )}
             >
-              <LogIn className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0 drop-shadow-lg" />
+              <LogIn className="h-5 w-5 drop-shadow-lg" />
             </div>
 
+            {/* Label */}
             {(isHovered || isMobileOpen || isMobile) && (
-              <span
-                className={cn(
-                  "font-semibold transition-all duration-500 ease-out",
-                  (isHovered || isMobileOpen) && "animate-in slide-in-from-left-5 duration-500"
-                )}
-              >
+              <span className="relative z-10 font-semibold truncate">
                 Log in
               </span>
             )}
 
+            {/* Active indicator */}
             {isLoginActive && (isHovered || isMobileOpen || isMobile) && (
-              <div className="ml-auto relative z-10 flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-white shadow-lg shadow-white/50 animate-pulse" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white/70 animate-pulse delay-150" />
-                <div className="w-1 h-1 rounded-full bg-white/50 animate-pulse delay-300" />
+              <div className="ml-auto relative z-10 flex items-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm animate-pulse" />
+                <div className="w-1 h-1 rounded-full bg-white/70 animate-pulse delay-150" />
               </div>
             )}
 
+            {/* Hover glow */}
             {!isLoginActive && (
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/20 to-indigo-500/0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out" />
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-indigo-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             )}
           </Link>
         </div>
