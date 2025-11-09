@@ -74,6 +74,153 @@ paths:
                   error:
                     type: string
                     example: No data for AAPL
+  
+  /fundamental/{ticker}:
+    get:
+      summary: Fundamental Analysis for a Stock
+      description: |
+        Returns key fundamental ratios, company info, and proprietary scores
+        (value, growth, health) based on yfinance data.
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+          example: AAPL
+      responses:
+        '200':
+          description: Fundamental analysis for the given ticker
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: object
+                    description: Key fundamental metrics and company information
+                    properties:
+                      ticker:
+                        type: string
+                        example: AAPL
+                      longName:
+                        type: string
+                        example: Apple Inc.
+                      sector:
+                        type: string
+                        example: Technology
+                      industry:
+                        type: string
+                        example: Consumer Electronics
+                      country:
+                        type: string
+                        example: United States
+                      website:
+                        type: string
+                        example: https://www.apple.com
+                      longBusinessSummary:
+                        type: string
+                        example: "Apple Inc. designs, manufactures, and markets..."
+                      marketCap:
+                        type: number
+                        example: 2700000000000
+                      trailingPE:
+                        type: number
+                        format: float
+                        example: 28.5
+                      forwardPE:
+                        type: number
+                        format: float
+                        example: 26.8
+                      priceToBook:
+                        type: number
+                        format: float
+                        example: 42.1
+                      revenueGrowth:
+                        type: number
+                        format: float
+                        example: 0.081
+                      earningsGrowth:
+                        type: number
+                        format: float
+                        example: 0.12
+                      profitMargins:
+                        type: number
+                        format: float
+                        example: 0.257
+                      returnOnEquity:
+                        type: number
+                        format: float
+                        example: 1.62
+                      returnOnAssets:
+                        type: number
+                        format: float
+                        example: 0.28
+                      debtToEquity:
+                        type: number
+                        format: float
+                        example: 148.8
+                      currentRatio:
+                        type: number
+                        format: float
+                        example: 0.98
+                      quickRatio:
+                        type: number
+                        format: float
+                        example: 0.75
+                      dividendYield:
+                        type: number
+                        format: float
+                        example: 0.0055
+                      payoutRatio:
+                        type: number
+                        format: float
+                        example: 0.147
+                      sharesOutstanding:
+                        type: number
+                        example: 15500000000
+                      beta:
+                        type: number
+                        format: float
+                        example: 1.28
+                      '52WeekChange':
+                        type: number
+                        format: float
+                        example: 0.152
+                  scores:
+                    type: object
+                    description: Proprietary scores from 0.0 to 1.0
+                    properties:
+                      value_score:
+                        type: number
+                        format: float
+                        example: 0.6525
+                        nullable: true
+                      growth_score:
+                        type: number
+                        format: float
+                        example: 0.8100
+                        nullable: true
+                      health_score:
+                        type: number
+                        format: float
+                        example: 0.9200
+                        nullable: true
+                      final_score:
+                        type: number
+                        format: float
+                        example: 0.7830
+                        nullable: true
+        '400':
+          description: Invalid ticker or data fetch failure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No fundamental data found for AAPL
 
   /sentiment/{ticker}:
     get:

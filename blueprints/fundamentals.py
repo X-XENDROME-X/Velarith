@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
-from .fundamental_core import get_fundamental_summary
-from .fundamental_signal import compute_fundamental_score
+from blueprints.fundamental.fundamental_core import get_fundamental_summary
+from blueprints.fundamental.fundamental_signal import compute_fundamental_score
 
 fund_bp = Blueprint("fundamental", __name__, url_prefix="/fundamental")
 
