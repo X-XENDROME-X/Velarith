@@ -9,16 +9,18 @@ import json
 import os
 from pathlib import Path
 from urllib.parse import urlencode
-
+from cachetools import cached, TTLCache
 import yfinance as yf
 from dotenv import load_dotenv
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 import anthropic
+import async_lru
 
 # Import fundamentals data function
 from blueprints.fundamental.core import get_comprehensive_fundamental_data
 
+polymarket_cache = TTLCache(maxsize=32, ttl=300)
 
 # --- ENV SETUP ---
 _env_path = Path(__file__).resolve().parents[2] / ".env"
@@ -51,6 +53,7 @@ MACRO_KEYWORDS = [
 # =====================================================================================
 # MAIN SENTIMENT FETCH
 # =====================================================================================
+@async_lru.alru_cache(maxsize=32, ttl=300)
 async def get_ai_polymarket_sentiment(keyword: str) -> dict:
     """Fetch Polymarket data via MCP and analyze it using Claude for sentiment."""
     print(f"[Polymarket] 🔍 Starting fetch for '{keyword}'")
