@@ -219,6 +219,19 @@
   padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
 }
 
+/* Login page helpers */
+.login-page-container {
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+@supports (min-height: 100dvh) {
+  .login-page-container {
+    min-height: 100dvh;
+  }
+}
+
 .delay-150 {
   animation-delay: 150ms;
 }
