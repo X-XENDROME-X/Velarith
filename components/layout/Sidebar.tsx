@@ -56,6 +56,10 @@ export function Sidebar() {
     }
   }, [isMobileOpen]);
 
+  const sidebarPositionClass = isMobile
+    ? "top-16 left-0 sidebar-mobile-height"
+    : "top-0 h-full lg:left-0";
+
   return (
     <>
       {/* Mobile/Tablet top bar */}
@@ -101,7 +105,7 @@ export function Sidebar() {
         className={cn(
           "flex flex-col fixed bg-[#0B1120]/98 backdrop-blur-2xl border-r border-white/5 transition-all duration-500 ease-out z-50",
           // Positioning
-          isMobile ? "top-16 left-0 h-[calc(100vh-4rem)]" : "top-0 h-full lg:left-0",
+          sidebarPositionClass,
           // Desktop: hover expand behavior
           isHovered && !isMobile ? "lg:w-72" : "lg:w-20",
           // Mobile: slide in from left
@@ -144,7 +148,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+        <nav className="flex-1 px-3 pt-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent sidebar-safe-padding">
           {navigation.map((item, index) => {
             const isActive = pathname === item.href;
             const showLabel = isHovered || isMobileOpen || isMobile;
@@ -203,7 +207,7 @@ export function Sidebar() {
         </nav>
 
         {/* Settings & Login */}
-        <div className="border-t border-white/5 px-3 py-4 space-y-2 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="border-t border-white/5 px-3 py-4 space-y-2 sidebar-safe-padding-tight">
           <Link
             href="/settings"
             className={cn(
