@@ -97,7 +97,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-slate-950 text-white">
+  <div className="relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-slate-950 text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.18),_transparent_60%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(168,85,247,0.22),_transparent_55%)] opacity-70" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/60 to-transparent" />
