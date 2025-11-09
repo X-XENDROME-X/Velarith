@@ -162,21 +162,6 @@ paths:
         '500':
           description: Sentiment analysis pipeline failed
 
-  /macro:
-    get:
-      summary: Get Macro Market Sentiment
-      description: |
-        Returns Polymarket sentiment for key macro topics.
-      responses:
-        '200':
-          description: Macro sentiment overview
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-
   /analysis/{ticker}:
     get:
       summary: Get Composite Stock Analysis
@@ -405,6 +390,8 @@ components:
 
             The company exhibits consistent revenue growth and strong technical momentum
             within a moderate risk profile...
+
+
 
 x-scripts:
   - name: build_prompt

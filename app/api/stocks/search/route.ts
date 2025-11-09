@@ -1,40 +1,32 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
-// Mock search results - replace with real API
-const MOCK_STOCKS = [
-	{ symbol: "AAPL", name: "Apple Inc.", type: "Common Stock", exchange: "NASDAQ" },
-	{ symbol: "MSFT", name: "Microsoft Corporation", type: "Common Stock", exchange: "NASDAQ" },
-	{ symbol: "GOOGL", name: "Alphabet Inc.", type: "Common Stock", exchange: "NASDAQ" },
-	{ symbol: "AMZN", name: "Amazon.com Inc.", type: "Common Stock", exchange: "NASDAQ" },
-	{ symbol: "NVDA", name: "NVIDIA Corporation", type: "Common Stock", exchange: "NASDAQ" },
-	{ symbol: "META", name: "Meta Platforms Inc.", type: "Common Stock", exchange: "NASDAQ" },
-	{ symbol: "TSLA", name: "Tesla Inc.", type: "Common Stock", exchange: "NASDAQ" },
-	{ symbol: "JPM", name: "JPMorgan Chase & Co.", type: "Common Stock", exchange: "NYSE" },
-	{ symbol: "V", name: "Visa Inc.", type: "Common Stock", exchange: "NYSE" },
-	{ symbol: "WMT", name: "Walmart Inc.", type: "Common Stock", exchange: "NYSE" },
-];
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const q = searchParams.get("q");
 
-export async function GET(request: NextRequest) {
-	const { searchParams } = new URL(request.url);
-	const query = searchParams.get("q")?.toLowerCase() || "";
+  if (!q) {
+    return new Response("Missing query parameter", { status: 400 });
+  }
 
-	try {
-		// In production, use Finnhub symbol search:
-		// const apiKey = process.env.FINNHUB_API_KEY;
-		// const response = await fetch(
-		//   `https://finnhub.io/api/v1/search?q=${query}&token=${apiKey}`
-		// );
-		// const data = await response.json();
+  const yahooUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(
+    q
+  )}&quotesCount=6&newsCount=0`;
 
-		const results = MOCK_STOCKS.filter(
-			(stock) =>
-				stock.symbol.toLowerCase().includes(query) ||
-				stock.name.toLowerCase().includes(query),
-		).slice(0, 8);
+  try {
+    const res = await fetch(yahooUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0", // Required for some edge providers
+      },
+    });
 
-		return NextResponse.json(results);
-	} catch (error) {
-		console.error("Error searching stocks:", error);
-		return NextResponse.json({ error: "Failed to search stocks" }, { status: 500 });
-	}
+    const data = await res.json();
+
+    return new Response(JSON.stringify(data), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (err) {
+    return new Response("Yahoo fetch failed", { status: 500 });
+  }
 }
