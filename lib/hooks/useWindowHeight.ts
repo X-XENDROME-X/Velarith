@@ -6,15 +6,45 @@ function useWindowHeight() {
   const [windowHeight, setWindowHeight] = useState(0);
 
   useEffect(() => {
-    function handleResize() {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
-      setWindowHeight(window.innerHeight);
-    }
+    let timeout: number | undefined;
 
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const updateViewportHeight = () => {
+      const viewport = window.visualViewport;
+      const height = viewport?.height ?? window.innerHeight;
+      const vh = height * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      setWindowHeight(height);
+    };
+
+    const refreshViewportHeight = () => {
+      updateViewportHeight();
+      if (timeout !== undefined) {
+        window.clearTimeout(timeout);
+      }
+      timeout = window.setTimeout(updateViewportHeight, 250);
+    };
+
+    refreshViewportHeight();
+
+    const frame = window.requestAnimationFrame(() => {
+      refreshViewportHeight();
+    });
+
+    window.addEventListener('resize', refreshViewportHeight);
+    window.addEventListener('orientationchange', refreshViewportHeight);
+    window.addEventListener('focus', refreshViewportHeight);
+    window.addEventListener('visibilitychange', refreshViewportHeight);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      if (timeout !== undefined) {
+        window.clearTimeout(timeout);
+      }
+      window.removeEventListener('resize', refreshViewportHeight);
+      window.removeEventListener('orientationchange', refreshViewportHeight);
+      window.removeEventListener('focus', refreshViewportHeight);
+      window.removeEventListener('visibilitychange', refreshViewportHeight);
+    };
   }, []);
 
   return windowHeight;

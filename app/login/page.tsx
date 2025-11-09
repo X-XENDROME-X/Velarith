@@ -102,7 +102,7 @@ export default function LoginPage() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(168,85,247,0.22),_transparent_55%)] opacity-70" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/60 to-transparent" />
 
-      <main className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-12 px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-24 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center lg:gap-16 lg:px-8 lg:pb-24 lg:pt-28">
+  <main className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-24 lg:grid lg:min-h-full lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center lg:gap-16 lg:px-8 lg:pb-24 lg:pt-28">
         <section className="order-1 space-y-10 lg:order-1 lg:space-y-12">
           <Link
             href="/dashboard"
@@ -158,7 +158,7 @@ export default function LoginPage() {
         </section>
       </main>
 
-      <section className="relative mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6 lg:px-8">
+  <section className="relative mx-auto w-full max-w-6xl flex-shrink-0 px-4 pb-16 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-[0_30px_120px_-70px_rgba(59,130,246,0.8)] sm:p-8">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-md space-y-3">
