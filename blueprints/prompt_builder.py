@@ -21,7 +21,7 @@ def build_prompt(ticker: str, mode: str, final_scores: dict, fundamentals: dict 
     tech_section = ""
     if tech_summary and "error" not in tech_summary:
         tech_section = f"""
-        Technical Indicators:
+        Technical Indicators for {ticker}:
         • Current Price: ${tech_summary.get('close', 'N/A')}
         • 52-Week Range: ${tech_summary.get('low52', 'N/A')} - ${tech_summary.get('high52', 'N/A')}
         • Key EMAs: EMA20 (${tech_summary.get('ema20', 'N/A')}), EMA50 (${tech_summary.get('ema50', 'N/A')}), EMA200 (${tech_summary.get('ema200', 'N/A')})
@@ -36,7 +36,7 @@ def build_prompt(ticker: str, mode: str, final_scores: dict, fundamentals: dict 
     fund_section = ""
     if fundamentals and "error" not in fundamentals:
         fund_section = f"""
-        Fundamental Indicators:
+        Fundamental Indicators for {ticker}:
         • Market Cap: {fundamentals.get('marketCap', 'N/A')}
         • P/E Ratio (Trailing): {fundamentals.get('trailingPE', 'N/A')}
         • P/E Ratio (Forward): {fundamentals.get('forwardPE', 'N/A')}
@@ -67,44 +67,41 @@ def build_prompt(ticker: str, mode: str, final_scores: dict, fundamentals: dict 
 
     # --- 4. The Main Prompt Template ---
     return f"""
-        You are an expert equity analyst. Your goal is to provide a clear, concise, and professional
-        analysis for a user, formatted in perfect Markdown.
+You are an expert equity analyst. Generate a clear, concise, and professional analysis.
 
-        Return your answer using ONLY these exact headers and structure:
+⚙️ OUTPUT FORMAT:
+Return ONLY valid JSON, using this exact structure:
 
-        ## **[Verdict]**
-        (e.g., **STRONG BUY**, **HOLD**, **SPECULATIVE BUY**, **SELL**, **STRONG SELL**)
+{{
+  "verdict": "STRONG BUY / HOLD / SELL / etc.",
+  "rationale": "2–3 lines explaining why this verdict was chosen.",
+  "strengths": [
+    "Strong insider buying",
+    "Bullish EMA crossover", 
+    "etc."
+  ],
+  "weaknesses": [
+    "High valuation vs. peers",
+    "Low growth compared to sector"
+    "etc."
+  ],
+  "summary": "2–4 line synthesis of fundamentals, technicals, and sentiment. + advice for the user based on strength and weakness.",
+}}
 
-        A 2-3 line paragraph explaining *why* this verdict was chosen, referencing the
-        final scores, key indicators, and the user's risk profile.
+Do not include any extra text, markdown, or commentary outside the JSON object.
 
-        ---
+Here is all the data for {ticker}. Use it to generate your analysis.
 
-        ## Analysis & Rationale
+{user_section}
 
-        ### Strengths
-        - 1-3 bullet points on the strongest positive signals (e.g., "Strong insider buying", "Bullish technical momentum").
+Final Scores (0–100):
+• Composite Score: {final_scores.get('score', 'N/A')}
+• Fundamental Score: {final_scores.get('fundamentals', 'N/A')}
+• Technical Score: {final_scores.get('technical', 'N/A')}
+• Sentiment Score: {final_scores.get('sentiment', 'N/A')}
+• Insider Score: {final_scores.get('insider', 'N/A')}
 
-        ### Weaknesses
-        - 1-3 bullet points on the strongest negative signals or risks (e.g., "High valuation vs. peers", "RSI indicates overbought").
-
-        ### Summary
-        - A 2-4 line explanation of the combined fundamental, technical, and sentiment picture.
-
-        ---
-        Here is all the data for {ticker}. Use it to generate your analysis.
-        ---
-
-        {user_section}
-
-        Final Scores (0-100):
-        • Composite Score: {final_scores.get('score', 'N/A')}
-        • Fundamental Score: {final_scores.get('fundamentals', 'N/A')}
-        • Technical Score: {final_scores.get('technical', 'N/A')}
-        • Sentiment Score: {final_scores.get('sentiment', 'N/A')}
-        • Insider Score: {final_scores.get('insider', 'N/A')}
-
-        {tech_section}
-        {fund_section}
-        {peer_section}
-        """
+{tech_section}
+{fund_section}
+{peer_section}
+"""
