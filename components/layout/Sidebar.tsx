@@ -11,6 +11,7 @@ import {
   MessageSquare,
   BarChart3,
   Settings,
+  LogIn,
   X,
   Menu,
 } from "lucide-react";
@@ -27,6 +28,8 @@ export function Sidebar() {
   const [isHovered, setIsHovered] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const isSettingsActive = pathname?.startsWith("/settings") ?? false;
+  const isLoginActive = pathname?.startsWith("/login") ?? false;
 
   // Detect screen size
   useEffect(() => {
@@ -204,30 +207,92 @@ export function Sidebar() {
         </nav>
 
         {/* Settings with enhanced styling */}
-        <div className="border-t border-white/5 px-3 lg:px-4 py-4 lg:py-5">
+        <div className="border-t border-white/5 px-3 lg:px-4 py-4 lg:py-5 space-y-3">
           <Link
             href="/settings"
             className={cn(
-              "flex items-center gap-4 rounded-2xl px-4 lg:px-5 py-4 lg:py-4.5 text-sm lg:text-base font-medium text-gray-400 transition-all duration-500 ease-out hover:text-white hover:bg-white/10 hover:scale-[1.02] relative group overflow-hidden",
+              "flex items-center gap-4 rounded-2xl px-4 lg:px-5 py-4 lg:py-4.5 text-sm lg:text-base font-medium transition-all duration-500 ease-out relative group overflow-hidden",
+              isSettingsActive
+                ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-2xl shadow-indigo-500/50 scale-[1.02]"
+                : "text-gray-400 hover:text-white hover:bg-white/10 hover:scale-[1.02]",
               !(isHovered || isMobileOpen) && !isMobile && "justify-center px-3 lg:px-4"
             )}
           >
             {/* Icon with smooth rotation animation */}
-            <div className="relative z-10 transition-all duration-700 ease-out group-hover:rotate-180 group-hover:scale-125">
+            <div
+              className={cn(
+                "relative z-10 transition-all duration-700 ease-out",
+                isSettingsActive ? "scale-110" : "group-hover:rotate-180 group-hover:scale-125"
+              )}
+            >
               <Settings className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0 drop-shadow-lg" />
             </div>
-            
+
             {(isHovered || isMobileOpen || isMobile) && (
-              <span className={cn(
-                "font-semibold transition-all duration-500 ease-out",
-                (isHovered || isMobileOpen) && "animate-in slide-in-from-left-5 duration-500"
-              )}>
+              <span
+                className={cn(
+                  "font-semibold transition-all duration-500 ease-out",
+                  (isHovered || isMobileOpen) && "animate-in slide-in-from-left-5 duration-500"
+                )}
+              >
                 Settings
               </span>
             )}
-            
-            {/* Hover effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-500/0 via-gray-400/20 to-gray-500/0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out" />
+
+            {isSettingsActive && (isHovered || isMobileOpen || isMobile) && (
+              <div className="ml-auto relative z-10 flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-white shadow-lg shadow-white/50 animate-pulse" />
+                <div className="w-1.5 h-1.5 rounded-full bg-white/70 animate-pulse delay-150" />
+                <div className="w-1 h-1 rounded-full bg-white/50 animate-pulse delay-300" />
+              </div>
+            )}
+
+            {!isSettingsActive && (
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-500/0 via-gray-400/20 to-gray-500/0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out" />
+            )}
+          </Link>
+
+          <Link
+            href="/login"
+            className={cn(
+              "flex items-center gap-4 rounded-2xl px-4 lg:px-5 py-4 lg:py-4.5 text-sm lg:text-base font-medium transition-all duration-500 ease-out relative group overflow-hidden",
+              isLoginActive
+                ? "bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 text-white shadow-2xl shadow-cyan-500/40 scale-[1.02]"
+                : "text-gray-400 hover:text-white hover:bg-white/10 hover:scale-[1.02]",
+              !(isHovered || isMobileOpen) && !isMobile && "justify-center px-3 lg:px-4"
+            )}
+          >
+            <div
+              className={cn(
+                "relative z-10 transition-all duration-700 ease-out",
+                isLoginActive ? "scale-110" : "group-hover:rotate-6 group-hover:scale-115"
+              )}
+            >
+              <LogIn className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0 drop-shadow-lg" />
+            </div>
+
+            {(isHovered || isMobileOpen || isMobile) && (
+              <span
+                className={cn(
+                  "font-semibold transition-all duration-500 ease-out",
+                  (isHovered || isMobileOpen) && "animate-in slide-in-from-left-5 duration-500"
+                )}
+              >
+                Log in
+              </span>
+            )}
+
+            {isLoginActive && (isHovered || isMobileOpen || isMobile) && (
+              <div className="ml-auto relative z-10 flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-white shadow-lg shadow-white/50 animate-pulse" />
+                <div className="w-1.5 h-1.5 rounded-full bg-white/70 animate-pulse delay-150" />
+                <div className="w-1 h-1 rounded-full bg-white/50 animate-pulse delay-300" />
+              </div>
+            )}
+
+            {!isLoginActive && (
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/20 to-indigo-500/0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out" />
+            )}
           </Link>
         </div>
       </div>
