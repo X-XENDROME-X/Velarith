@@ -105,7 +105,11 @@ export function Sidebar() {
           // Desktop: hover expand behavior
           isHovered && !isMobile ? "lg:w-72" : "lg:w-20",
           // Mobile: slide in from left
-          isMobile ? (isMobileOpen ? "w-[280px] translate-x-0 shadow-2xl" : "-translate-x-full w-[280px]") : "translate-x-0",
+          isMobile
+            ? isMobileOpen
+              ? "w-[300px] translate-x-0 shadow-2xl"
+              : "-translate-x-full w-[300px]"
+            : "translate-x-0",
           // Smooth width transition on desktop
           "will-change-[width,transform]"
         )}
@@ -140,7 +144,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
           {navigation.map((item, index) => {
             const isActive = pathname === item.href;
             const showLabel = isHovered || isMobileOpen || isMobile;
@@ -150,7 +154,7 @@ export function Sidebar() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 relative group overflow-hidden",
+                  "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 relative group min-w-0",
                   isActive
                     ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/30"
                     : "text-gray-400 hover:text-white hover:bg-white/10",
@@ -176,7 +180,7 @@ export function Sidebar() {
                 
                 {/* Label */}
                 {showLabel && (
-                  <span className="relative z-10 font-semibold truncate">
+                  <span className="relative z-10 font-semibold leading-snug">
                     {item.name}
                   </span>
                 )}
@@ -199,11 +203,11 @@ export function Sidebar() {
         </nav>
 
         {/* Settings & Login */}
-        <div className="border-t border-white/5 px-3 py-4 space-y-2">
+        <div className="border-t border-white/5 px-3 py-4 space-y-2 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <Link
             href="/settings"
             className={cn(
-              "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 relative group overflow-hidden",
+              "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 relative group min-w-0",
               isSettingsActive
                 ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/30"
                 : "text-gray-400 hover:text-white hover:bg-white/10",
@@ -222,7 +226,7 @@ export function Sidebar() {
 
             {/* Label */}
             {(isHovered || isMobileOpen || isMobile) && (
-              <span className="relative z-10 font-semibold truncate">
+              <span className="relative z-10 font-semibold leading-snug">
                 Settings
               </span>
             )}
@@ -244,7 +248,7 @@ export function Sidebar() {
           <Link
             href="/login"
             className={cn(
-              "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 relative group overflow-hidden",
+              "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 relative group min-w-0",
               isLoginActive
                 ? "bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 text-white shadow-lg shadow-cyan-500/30"
                 : "text-gray-400 hover:text-white hover:bg-white/10",
@@ -263,7 +267,7 @@ export function Sidebar() {
 
             {/* Label */}
             {(isHovered || isMobileOpen || isMobile) && (
-              <span className="relative z-10 font-semibold truncate">
+              <span className="relative z-10 font-semibold leading-snug">
                 Log in
               </span>
             )}
