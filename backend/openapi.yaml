@@ -7,6 +7,8 @@ info:
     including technical, fundamental, sentiment, and composite scores.
 
 servers:
+  - url: https://v-api.aranish.uk
+    description: Production server
   - url: http://localhost:10000
     description: Local development server
 
