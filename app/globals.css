@@ -221,15 +221,10 @@
 
 /* Login page helpers */
 .login-page-container {
-  min-height: 100vh;
+  min-height: 100vh; /* Fallback */
+  min-height: calc(var(--vh, 1vh) * 100);
   overflow-x: hidden;
   overflow-y: auto;
-}
-
-@supports (min-height: 100dvh) {
-  .login-page-container {
-    min-height: 100dvh;
-  }
 }
 
 .delay-150 {
