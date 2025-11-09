@@ -27,7 +27,7 @@ from .scorer import (
 )
 
 # Import data fetchers (from sibling folders)
-from .fundamental.fundamental_core import get_comprehensive_fundamental_data
+from .fundamental.core import get_comprehensive_fundamental_data
 from .fundamental.peer_utils import get_peer_context
 from .technical.core import get_technical_summary, fetch_price_data
 from .technical.signal import compute_signal as compute_technical_signal

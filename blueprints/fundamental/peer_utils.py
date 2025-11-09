@@ -2,11 +2,7 @@ import os
 import requests
 import numpy as np
 from functools import lru_cache
-
-try:
-    from .fundamental_core import get_comprehensive_fundamental_data
-except ImportError:
-    from fundamental_core import get_comprehensive_fundamental_data
+from blueprints.fundamental.core import get_comprehensive_fundamental_data
 
 # Get Finnhub API Key from environment variables
 FINNHUB_KEY = os.getenv("FINNHUB_API_KEY", None)

@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
-from blueprints.fundamental.fundamental_core import get_comprehensive_fundamental_data
-from blueprints.fundamental.fundamental_signal import compute_fundamental_score
+from Velarith.blueprints.fundamental.core import get_comprehensive_fundamental_data
+from Velarith.blueprints.fundamental.signal import compute_fundamental_score
 from blueprints.fundamental.peer_utils import get_peer_context 
 
 # Create the blueprint

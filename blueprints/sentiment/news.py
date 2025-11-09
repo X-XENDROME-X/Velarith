@@ -1,45 +1,58 @@
 import os
-import httpx 
+import requests
+from datetime import datetime, timedelta
 from textblob import TextBlob
-from typing import Dict
 
-# --- Load key from .env ---
-FINNHUB_KEY = os.getenv("FINNHUB_API_KEY", "")
+async def get_news_sentiment(ticker: str):
+    """
+    Analyze company news headlines using TextBlob polarity.
+    Returns both overall sentiment score and headline-level breakdown.
+    """
+    api_key = os.getenv("FINNHUB_API_KEY")
+    if not api_key:
+        print("[News Error] FINNHUB_API_KEY missing in .env")
+        return {"score": 50, "source": "news", "meta": {"total": 0, "positive": 0, "negative": 0, "neutral": 0}}
 
-async def get_news_sentiment(ticker: str) -> Dict:
-    """Analyze recent news sentiment for the ticker."""
-    if not FINNHUB_KEY:
-        print("[WARN] FINNHUB_API_KEY not set. Skipping news.")
-        return {"score": 50, "source": "news", "error": "API key not set"}
+    today = datetime.now()
+    week_ago = today - timedelta(days=7)
+    url = (
+        f"https://finnhub.io/api/v1/company-news?"
+        f"symbol={ticker}&from={week_ago.date()}&to={today.date()}&token={api_key}"
+    )
 
-    url = f"https://finnhub.io/api/v1/company-news?symbol={ticker}&from=2024-10-01&to=2024-11-01&token={FINNHUB_KEY}"
-    
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, timeout=10.0)
-            resp.raise_for_status() 
-            resp_data = resp.json()
-    except Exception as e:
-        print(f"[ERROR] News fetch failed: {e}")
-        return {"score": 50, "source": "news", "error": str(e)}
+    resp = requests.get(url).json()
 
-    if not resp_data:
-        return {"score": 50, "source": "news"}
+    if not isinstance(resp, list) or len(resp) == 0:
+        print(f"[News Info] No articles returned for {ticker}")
+        return {"score": 50, "source": "news", "meta": {"total": 0, "positive": 0, "negative": 0, "neutral": 0}}
 
     sentiments = []
-    for article in resp_data[:10]: # Get top 10 articles
-        score = TextBlob(article.get("headline", "")).sentiment.polarity
-        sentiments.append(score)
+    breakdown = {"positive": 0, "negative": 0, "neutral": 0}
 
-    avg = (sum(sentiments) / len(sentiments)) if sentiments else 0
-    normalized = int((avg + 1) * 50)  # map -1 -> 0, 1 -> 100
-    
+    for article in resp[:20]:  # read up to 20 latest articles
+        headline = article.get("headline", "")
+        if not headline.strip():
+            continue
+        polarity = TextBlob(headline).sentiment.polarity
+        sentiments.append(polarity)
+
+        if polarity > 0.05:
+            breakdown["positive"] += 1
+        elif polarity < -0.05:
+            breakdown["negative"] += 1
+        else:
+            breakdown["neutral"] += 1
+
+    if not sentiments:
+        return {"score": 50, "source": "news", "meta": {**breakdown, "total": 0}}
+
+    avg = sum(sentiments) / len(sentiments)
+    normalized = int((avg + 1) * 50)
+
+    breakdown["total"] = len(sentiments)
+
     return {
-        "score": normalized, 
+        "score": normalized,
         "source": "news",
-        "meta": {
-            "total": len(resp_data),
-            "analyzed": len(sentiments),
-            "avg_polarity": round(avg, 3)
-        }
+        "meta": breakdown
     }
