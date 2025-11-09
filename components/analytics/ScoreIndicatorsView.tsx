@@ -96,7 +96,7 @@ const ScoreIndicatorsView = ({ technicals, fundamentals, sentiment, score }: Sco
 
 			{/* --- News Sentiment Section --- */}
 			<div className="space-y-2.5 sm:space-y-3 lg:space-y-4">
-				<h4 className="text-sm font-semibold text-white sm:text-[15px] lg:text-lg">News Sentiment</h4>
+				<h4 className="text-sm font-semibold text-white sm:text-[15px] lg:text-lg">Polymarket Sentiment</h4>
 				
                 {/* FIX: Check if 'sentiment' exists */}
 				{sentiment ? (
