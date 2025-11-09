@@ -1,0 +1,15 @@
+# --- Security ---
+# Ignore environment variables
+.env
+
+# --- Python ---
+# Ignore the virtual environment
+env/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# --- macOS ---
+# Ignore macOS system files
+.DS_Store

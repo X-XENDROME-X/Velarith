@@ -1,88 +1,110 @@
+from flask import Blueprint, request, jsonify
 import yfinance as yf
+import pandas as pd
 from functools import lru_cache
 
-# ----------------------------------------------------------
-# Data Access Layer
-# ----------------------------------------------------------
-
-@lru_cache(maxsize=128) # Cache results to avoid re-fetching
-def fetch_fundamental_data(ticker: str):
+# =========================
+# Core Data Fetcher
+# =========================
+@lru_cache(maxsize=128) # Keep the cache
+def get_comprehensive_fundamental_data(ticker: str) -> dict:
     """
-    Fetches the complete 'info' dictionary from yfinance for a ticker.
-    This dictionary contains all fundamental data.
+    Fetch and compute a wide range of fundamental and context-aware
+    data for a single ticker.
     """
     try:
-        stock = yf.Ticker(ticker)
-        info = stock.info
+        tkr = yf.Ticker(ticker)
         
-        # yfinance can return an empty dict or a dict with an error
+        # --- Fetch core data objects ---
+        info = tkr.info or {}
+        
+        # Check for valid data
         if not info or info.get('trailingEps', None) is None:
-            # 'trailingEps' is a good proxy to see if we got real data
             return {"error": f"No fundamental data found for {ticker}."}
             
-        return info
-    except Exception as e:
-        print(f"[ERROR] Fetching fundamentals for {ticker}: {e}")
-        return {"error": f"API error fetching data for {ticker}: {str(e)}"}
+        hist_1y = tkr.history(period="1y")
 
-# ----------------------------------------------------------
-# Core Computation Layer
-# ----------------------------------------------------------
+        # --- Price + Identification ---
+        price = info.get("currentPrice") or info.get("regularMarketPrice")
+        sector = info.get("sector")
+        industry = info.get("industry")
+        summary = info.get("longBusinessSummary")
 
-# Define the exact metrics we want to expose to the frontend.
-# This keeps our API clean and protects against yfinance changing
-# a key's name and breaking the frontend.
-KEYS_TO_EXTRACT = [
-    # Company Info
-    'longName', 'sector', 'industry', 'country', 'website', 'longBusinessSummary',
-    
-    # Key Valuation Ratios (from your screenshot)
-    'marketCap', 'trailingPE', 'forwardPE', 'priceToBook',
-    
-    # Growth (from your screenshot)
-    'revenueGrowth', 'earningsGrowth', 
-    
-    # Profitability
-    'profitMargins', 'returnOnEquity', 'returnOnAssets',
-    
-    # Financial Health
-    'debtToEquity', 'currentRatio', 'quickRatio',
-    
-    # Dividends & Stock Info
-    'dividendYield', 'payoutRatio', 'sharesOutstanding',
-    'beta', '52WeekChange'
-]
+        # --- Valuation ---
+        pe = info.get("trailingPE")
+        fpe = info.get("forwardPE")
+        pb = info.get("priceToBook")
+        peg = info.get("pegRatio")
+        div_yield = info.get("dividendYield")
+        market_cap = info.get("marketCap")
+        ps = info.get("priceToSalesTrailing12Months")
+        ev_ebitda = info.get("enterpriseToEbitda")
 
-def get_fundamental_summary(ticker: str):
-    """
-    Fetches raw fundamental data and distills it into a clean, 
-    frontend-ready dictionary.
-    """
-    raw_data = fetch_fundamental_data(ticker)
-    
-    if "error" in raw_data:
-        return raw_data
+        # --- Profitability & Efficiency ---
+        roe = info.get("returnOnEquity")
+        op_margin = info.get("operatingMargins")
+        net_margin = info.get("profitMargins") # Use 'profitMargins' for net
+
+        # --- Debt & Liquidity ---
+        debt_eq = info.get("debtToEquity")
+        current_ratio = info.get("currentRatio")
+        quick_ratio = info.get("quickRatio")
+
+        # --- Growth ---
+        earnings_g = info.get("earningsGrowth")
+        revenue_g = info.get("revenueGrowth")
+        fcf = info.get("freeCashflow")
+
+        # --- Technical Context (from 1y history) ---
+        low52 = float(hist_1y["Low"].min())
+        high52 = float(hist_1y["High"].max())
         
-    summary = {"ticker": ticker.upper()}
-    
-    for key in KEYS_TO_EXTRACT:
-        # Use .get() to safely handle missing keys (returns None)
-        summary[key] = raw_data.get(key, None)
+        # --- Earnings calendar ---
+        calendar = info.get("nextEarningsDate") # yfinance changed this key
 
-    # Clean up data types that might not be JSON serializable
-    # (e.g., numpy types)
-    for key, value in summary.items():
-        if isinstance(value, (int, float, str, bool)) or value is None:
-            continue
-        summary[key] = str(value) # Fallback to string
+        return {
+            "ticker": ticker.upper(),
+            "longName": info.get("longName"),
+            "sector": sector or "Unknown",
+            "industry": industry or "Unknown",
+            "longBusinessSummary": summary,
+            "website": info.get("website"),
+            "country": info.get("country"),
+            
+            "currentPrice": round(price, 2) if price else None,
+            "marketCap": market_cap,
+            "beta": info.get("beta"),
+            
+            # Valuation
+            "trailingPE": pe,
+            "forwardPE": fpe,
+            "priceToBook": pb,
+            "pegRatio": peg,
+            "priceToSales": ps,
+            "enterpriseToEbitda": ev_ebitda,
+            "dividendYield": div_yield,
 
-    return summary
+            # Profitability
+            "returnOnEquity": roe,
+            "operatingMargin": op_margin,
+            "netMargin": net_margin,
 
-if __name__ == "__main__":
-    # Test the core module
-    summary = get_fundamental_summary("AAPL")
-    import json
-    print(json.dumps(summary, indent=2))
-    
-    summary_err = get_fundamental_summary("ASDFQWER")
-    print(summary_err)
+            # Health
+            "debtToEquity": debt_eq,
+            "currentRatio": current_ratio,
+            "quickRatio": quick_ratio,
+
+            # Growth
+            "earningsGrowth": earnings_g,
+            "revenueGrowth": revenue_g,
+            "freeCashFlow": fcf,
+
+            # Context
+            "low52Week": round(low52, 2),
+            "high52Week": round(high52, 2),
+            "nextEarningsDate": str(calendar) if calendar else None,
+        }
+
+    except Exception as e:
+        print(f"[ERROR] fundamentals fetch failed for {ticker}: {e}")
+        return {"error": f"Failed to fetch fundamental data: {str(e)}"}

@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: |
     Backend API for Stock Analyzer — provides AI-powered stock analytics,
-    including technical indicators, sentiment analysis, and macro market context.
+    including technical, fundamental, sentiment, and composite scores.
 
 servers:
   - url: http://localhost:10000
@@ -14,7 +14,7 @@ paths:
   /:
     get:
       summary: Health check
-      description: Returns API status.
+      description: Returns API status and available endpoints.
       responses:
         '200':
           description: Successful response
@@ -29,10 +29,12 @@ paths:
                   message:
                     type: string
                     example: Stock Analyzer API is live.
+                  endpoints:
+                    type: object
 
   /technical/{ticker}:
     get:
-      summary: Technical Analysis for a Stock
+      summary: Get Raw Technical Indicators
       description: |
         Returns computed technical indicators, chart image (base64), 
         and a quantitative signal (bullish/bearish).
@@ -49,38 +51,17 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  ticker:
-                    type: string
-                    example: AAPL
-                  technical_summary:
-                    type: object
-                    description: Key metrics and indicators
-                  signal_score:
-                    type: number
-                    example: 78
-                  chart_base64:
-                    type: string
-                    description: Base64-encoded PNG chart image
-                    example: "iVBORw0KGgoAAAANSUhEUgAA..."
+                # This response matches your 'technicals.py' blueprint
+                type: object 
         '400':
           description: Invalid ticker or data fetch failure
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: No data for AAPL
-  
+
   /fundamental/{ticker}:
     get:
-      summary: Fundamental Analysis for a Stock
+      summary: Get Raw Fundamental Data
       description: |
-        Returns key fundamental ratios, company info, and proprietary scores
-        (value, growth, health) based on yfinance data.
+        Returns a comprehensive set of fundamental and context-aware
+        data for a stock. This is a data-only endpoint.
       parameters:
         - name: ticker
           in: path
@@ -90,144 +71,74 @@ paths:
           example: AAPL
       responses:
         '200':
-          description: Fundamental analysis for the given ticker
+          description: Comprehensive fundamental data for the given ticker
           content:
             application/json:
               schema:
+                # This is the new, flat structure from 'fundamental_core.py'
                 type: object
                 properties:
-                  summary:
-                    type: object
-                    description: Key fundamental metrics and company information
-                    properties:
-                      ticker:
-                        type: string
-                        example: AAPL
-                      longName:
-                        type: string
-                        example: Apple Inc.
-                      sector:
-                        type: string
-                        example: Technology
-                      industry:
-                        type: string
-                        example: Consumer Electronics
-                      country:
-                        type: string
-                        example: United States
-                      website:
-                        type: string
-                        example: https://www.apple.com
-                      longBusinessSummary:
-                        type: string
-                        example: "Apple Inc. designs, manufactures, and markets..."
-                      marketCap:
-                        type: number
-                        example: 2700000000000
-                      trailingPE:
-                        type: number
-                        format: float
-                        example: 28.5
-                      forwardPE:
-                        type: number
-                        format: float
-                        example: 26.8
-                      priceToBook:
-                        type: number
-                        format: float
-                        example: 42.1
-                      revenueGrowth:
-                        type: number
-                        format: float
-                        example: 0.081
-                      earningsGrowth:
-                        type: number
-                        format: float
-                        example: 0.12
-                      profitMargins:
-                        type: number
-                        format: float
-                        example: 0.257
-                      returnOnEquity:
-                        type: number
-                        format: float
-                        example: 1.62
-                      returnOnAssets:
-                        type: number
-                        format: float
-                        example: 0.28
-                      debtToEquity:
-                        type: number
-                        format: float
-                        example: 148.8
-                      currentRatio:
-                        type: number
-                        format: float
-                        example: 0.98
-                      quickRatio:
-                        type: number
-                        format: float
-                        example: 0.75
-                      dividendYield:
-                        type: number
-                        format: float
-                        example: 0.0055
-                      payoutRatio:
-                        type: number
-                        format: float
-                        example: 0.147
-                      sharesOutstanding:
-                        type: number
-                        example: 15500000000
-                      beta:
-                        type: number
-                        format: float
-                        example: 1.28
-                      '52WeekChange':
-                        type: number
-                        format: float
-                        example: 0.152
-                  scores:
-                    type: object
-                    description: Proprietary scores from 0.0 to 1.0
-                    properties:
-                      value_score:
-                        type: number
-                        format: float
-                        example: 0.6525
-                        nullable: true
-                      growth_score:
-                        type: number
-                        format: float
-                        example: 0.8100
-                        nullable: true
-                      health_score:
-                        type: number
-                        format: float
-                        example: 0.9200
-                        nullable: true
-                      final_score:
-                        type: number
-                        format: float
-                        example: 0.7830
-                        nullable: true
+                  ticker:
+                    type: string
+                    example: AAPL
+                  longName:
+                    type: string
+                    example: Apple Inc.
+                  sector:
+                    type: string
+                    example: Technology
+                  currentPrice:
+                    type: number
+                    format: float
+                    example: 150.25
+                  marketCap:
+                    type: number
+                    example: 2700000000000
+                  trailingPE:
+                    type: number
+                    format: float
+                    example: 28.5
+                  forwardPE:
+                    type: number
+                    format: float
+                    example: 26.8
+                  priceToBook:
+                    type: number
+                    format: float
+                    example: 42.1
+                  returnOnEquity:
+                    type: number
+                    format: float
+                    example: 1.62
+                  revenueGrowth:
+                    type: number
+                    format: float
+                    example: 0.081
+                  earningsGrowth:
+                    type: number
+                    format: float
+                    example: 0.12
+                  debtToEquity:
+                    type: number
+                    format: float
+                    example: 148.8
+                  low52Week:
+                    type: number
+                    format: float
+                    example: 129.04
+                  high52Week:
+                    type: number
+                    format: float
+                    example: 198.23
         '400':
           description: Invalid ticker or data fetch failure
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: No fundamental data found for AAPL
 
   /sentiment/{ticker}:
     get:
-      summary: Aggregated Sentiment Analysis
+      summary: Get Aggregated Sentiment
       description: |
-        Combines multiple sentiment sources — news, Google Trends, and Polymarket prediction markets.
-        Returns normalized scores (0–100) and an overall composite sentiment.
+        Combines News, Google Trends, and Polymarket sources.
+        Returns a composite sentiment score and the raw source data.
       parameters:
         - name: ticker
           in: path
@@ -241,80 +152,91 @@ paths:
           content:
             application/json:
               schema:
+                # This matches your 'sentiments.py' blueprint
                 type: object
                 properties:
-                  ticker:
-                    type: string
-                    example: MSFT
-                  sources:
-                    type: object
-                    properties:
-                      news:
-                        type: object
-                        properties:
-                          score:
-                            type: number
-                            example: 72
-                          source:
-                            type: string
-                            example: news
-                      google_trends:
-                        type: object
-                        properties:
-                          score:
-                            type: number
-                            example: 61
-                          source:
-                            type: string
-                            example: google_trends
-                      polymarket:
-                        type: object
-                        properties:
-                          score:
-                            type: number
-                            example: 68
-                          weighted_probability:
-                            type: number
-                            example: 0.66
-                          avg_liquidity:
-                            type: number
-                            example: 35000.5
-                          volatility_score:
-                            type: number
-                            example: 14
-                          source:
-                            type: string
-                            example: polymarket
                   composite:
                     type: number
-                    description: Combined weighted sentiment score (0–100)
                     example: 67
+                  sources:
+                    type: object
+        '500':
+          description: Sentiment analysis pipeline failed
 
   /macro:
     get:
-      summary: Macro Market Sentiment
+      summary: Get Macro Market Sentiment
       description: |
-        Returns market sentiment for key macroeconomic topics such as interest rates, inflation,
-        and government shutdown probabilities (via Polymarket).
+        Returns Polymarket sentiment for key macro topics.
       responses:
         '200':
           description: Macro sentiment overview
           content:
             application/json:
               schema:
+                # This matches your 'macro_blueprint.py'
                 type: array
                 items:
                   type: object
-                  properties:
-                    keyword:
-                      type: string
-                      example: interest rates
-                    score:
-                      type: number
-                      example: 74
-                    total_volume:
-                      type: number
-                      example: 89230.4
-                    market_count:
-                      type: integer
-                      example: 3
+
+  /analysis/{ticker}:
+    get:
+      summary: Get Composite Analysis Score
+      description: |
+        The main endpoint. Orchestrates all modules (tech, fundamental,
+        sentiment, peer) to generate a final weighted score.
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+          example: AAPL
+        - name: mode
+          in: query
+          required: false
+          description: "Analysis mode: 'short' or 'long'. Defaults to 'short'."
+          schema:
+            type: string
+            enum: [short, long]
+            default: short
+      responses:
+        '200':
+          description: Successful analysis
+          content:
+            application/json:
+              schema:
+                # This matches your 'analysis.py' blueprint
+                type: object
+                properties:
+                  mode:
+                    type: string
+                    example: long
+                  ticker:
+                    type: string
+                    example: AAPL
+                  score:
+                    type: number
+                    format: float
+                    example: 78.5
+                  breakdown:
+                    type: object
+                    description: The individual scores that make up the final score
+                    properties:
+                      fundamentals:
+                        type: number
+                        example: 85.0
+                      peer:
+                        type: number
+                        example: 72.0
+                      sentiment:
+                        type: number
+                        example: 65.0
+                      insider:
+                        type: number
+                        example: 50.0
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Invalid ticker or data fetch failure

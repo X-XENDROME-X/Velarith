@@ -3,21 +3,20 @@ import requests
 import numpy as np
 from functools import lru_cache
 
-# Import from its sibling file 'fundamental_core.py'
-# The try/except block lets you run this file standalone for testing
 try:
-    from .fundamental_core import fetch_fundamental_data
+    from .fundamental_core import get_comprehensive_fundamental_data
 except ImportError:
-    from fundamental_core import fetch_fundamental_data
+    from fundamental_core import get_comprehensive_fundamental_data
 
 # Get Finnhub API Key from environment variables
 FINNHUB_KEY = os.getenv("FINNHUB_API_KEY", None)
 FINNHUB_PEERS_URL = "https://finnhub.io/api/v1/stock/peers"
 
-# Define the metrics we want to average from peers
+# --- FIX 2: Update keys to match the new function's output ---
+# (Changed 'profitMargins' to 'netMargin')
 METRICS_TO_AVERAGE = [
     'trailingPE', 'priceToBook', 'returnOnEquity', 'revenueGrowth',
-    'earningsGrowth', 'profitMargins', 'debtToEquity'
+    'earningsGrowth', 'netMargin', 'debtToEquity'
 ]
 
 @lru_cache(maxsize=32)
@@ -50,8 +49,9 @@ def compute_peer_averages(peers: list[str]):
     metrics = {k: [] for k in METRICS_TO_AVERAGE}
     
     for p in peers:
-        # Re-use our cached fundamental data fetcher
-        fundamentals = fetch_fundamental_data(p) 
+        # --- FIX 3: Call the new function ---
+        fundamentals = get_comprehensive_fundamental_data(p) 
+        
         if "error" in fundamentals:
             continue
         
@@ -72,7 +72,7 @@ def get_peer_context(ticker: str, peer_limit: int = 5):
     """
     peers = fetch_peers(ticker, limit=peer_limit)
     if not peers:
-        return None
+        return None # Return None, not an empty dict
 
     averages = compute_peer_averages(peers)
     
@@ -82,9 +82,6 @@ def get_peer_context(ticker: str, peer_limit: int = 5):
     }
 
 if __name__ == "__main__":
-    # To test this file:
-    # 1. Set your Finnhub key: export FINNHUB_API_KEY="your_key_here"
-    # 2. Run: python fundamentals_blueprints/peer_utils.py
     ticker = "AAPL"
     print(f"Fetching peer context for {ticker}...")
     context = get_peer_context(ticker)
