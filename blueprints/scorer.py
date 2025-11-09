@@ -1,4 +1,4 @@
-```"""
+"""
 scorer.py
 ----------
 Provides scoring and normalization utilities for both
@@ -142,4 +142,4 @@ if __name__ == "__main__":
 
     print("Short-term final:", weighted_average(short_scores, SHORT_TERM_WEIGHTS))
     print("Long-term final:", weighted_average(long_scores, LONG_TERM_WEIGHTS))
-```
+
