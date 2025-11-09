@@ -1,0 +1,79 @@
+"use client";
+
+import { ChevronDown } from "lucide-react";
+import type { AnalysisFilters } from "@/lib/types/analytics";
+
+interface FilterControlsProps {
+	filters: AnalysisFilters;
+	onFiltersChange: (filters: AnalysisFilters) => void;
+}
+
+const TIMEFRAME_OPTIONS = ["Long Term", "Mid Term", "Short Term", "Day Trade"];
+
+const FilterControls = ({ filters, onFiltersChange }: FilterControlsProps) => {
+	const handleTimeframeChange = (timeframe: string) => {
+		onFiltersChange({ ...filters, timeframe });
+	};
+
+	const handlePennyStockToggle = () => {
+		onFiltersChange({ ...filters, pennyStock: !filters.pennyStock });
+	};
+
+	const handleAgeChange = (age: string) => {
+		onFiltersChange({ ...filters, age });
+	};
+
+	const handleRiskProfileChange = (riskProfile: string) => {
+		onFiltersChange({ ...filters, riskProfile });
+	};
+
+	return (
+		<div className="flex flex-wrap items-center gap-3 sm:gap-4">
+			<div className="relative">
+				<select
+					value={filters.timeframe}
+					onChange={(e) => handleTimeframeChange(e.target.value)}
+					aria-label="Select timeframe"
+					className="w-full appearance-none rounded-[16px] border border-white/10 bg-white/5 py-2.5 pl-4 pr-10 text-sm text-white backdrop-blur-sm transition focus:border-white/30 focus:bg-white/10 focus:outline-none sm:w-[180px] sm:rounded-[20px] sm:py-3 sm:text-base"
+				>
+					{TIMEFRAME_OPTIONS.map((option) => (
+						<option key={option} value={option} className="bg-slate-900 text-white">
+							{option}
+						</option>
+					))}
+				</select>
+				<div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
+					<ChevronDown className="size-4 text-white/60" />
+				</div>
+			</div>
+
+			<label className="flex cursor-pointer items-center gap-2 rounded-[16px] border border-white/10 bg-white/5 px-4 py-2.5 backdrop-blur-sm transition hover:bg-white/10 sm:rounded-[20px] sm:py-3">
+				<input
+					type="checkbox"
+					checked={filters.pennyStock}
+					onChange={handlePennyStockToggle}
+					className="size-4 cursor-pointer rounded border-white/20 bg-white/5 text-white accent-white transition focus:ring-2 focus:ring-white/30 focus:ring-offset-0"
+				/>
+				<span className="text-sm text-white sm:text-base">Penny Stock?</span>
+			</label>
+
+			<input
+				type="text"
+				value={filters.age}
+				onChange={(e) => handleAgeChange(e.target.value)}
+				placeholder="Age"
+				className="w-[100px] rounded-[16px] border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/40 backdrop-blur-sm transition focus:border-white/30 focus:bg-white/10 focus:outline-none sm:w-[140px] sm:rounded-[20px] sm:py-3 sm:text-base"
+			/>
+
+			<input
+				type="text"
+				value={filters.riskProfile}
+				onChange={(e) => handleRiskProfileChange(e.target.value)}
+				placeholder="Risk profile (e.g. high)"
+				className="flex-1 rounded-[16px] border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/40 backdrop-blur-sm transition focus:border-white/30 focus:bg-white/10 focus:outline-none sm:min-w-[220px] sm:flex-initial sm:rounded-[20px] sm:py-3 sm:text-base"
+			/>
+		</div>
+	);
+};
+
+export default FilterControls;
