@@ -1,0 +1,411 @@
+openapi: 3.0.3
+info:
+  title: Stock Analyzer API
+  version: 1.0.0
+  description: |
+    Backend API for Stock Analyzer — provides AI-powered stock analytics,
+    including technical, fundamental, sentiment, and composite scores.
+
+servers:
+  - url: https://v-api.aranish.uk
+    description: Production server
+  - url: http://localhost:10000
+    description: Local development server
+
+paths:
+  /:
+    get:
+      summary: Health check
+      description: Returns API status and available endpoints.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Stock Analyzer API is live.
+                  endpoints:
+                    type: object
+
+  /technical/{ticker}:
+    get:
+      summary: Get Raw Technical Indicators
+      description: |
+        Returns computed technical indicators, chart image (base64), 
+        and a quantitative signal (bullish/bearish).
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+          example: AAPL
+      responses:
+        '200':
+          description: Technical indicators for the given ticker
+          content:
+            application/json:
+              schema:
+                type: object 
+        '400':
+          description: Invalid ticker or data fetch failure
+
+  /fundamental/{ticker}:
+    get:
+      summary: Get Raw Fundamental Data
+      description: |
+        Returns a comprehensive set of fundamental and context-aware
+        data for a stock. This is a data-only endpoint.
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+          example: AAPL
+      responses:
+        '200':
+          description: Comprehensive fundamental data for the given ticker
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticker:
+                    type: string
+                    example: AAPL
+                  longName:
+                    type: string
+                    example: Apple Inc.
+                  sector:
+                    type: string
+                    example: Technology
+                  currentPrice:
+                    type: number
+                    format: float
+                    example: 150.25
+                  marketCap:
+                    type: number
+                    example: 2700000000000
+                  trailingPE:
+                    type: number
+                    format: float
+                    example: 28.5
+                  forwardPE:
+                    type: number
+                    format: float
+                    example: 26.8
+                  priceToBook:
+                    type: number
+                    format: float
+                    example: 42.1
+                  returnOnEquity:
+                    type: number
+                    format: float
+                    example: 1.62
+                  revenueGrowth:
+                    type: number
+                    format: float
+                    example: 0.081
+                  earningsGrowth:
+                    type: number
+                    format: float
+                    example: 0.12
+                  debtToEquity:
+                    type: number
+                    format: float
+                    example: 148.8
+                  low52Week:
+                    type: number
+                    format: float
+                    example: 129.04
+                  high52Week:
+                    type: number
+                    format: float
+                    example: 198.23
+        '400':
+          description: Invalid ticker or data fetch failure
+
+  /sentiment/{ticker}:
+    get:
+      summary: Get Aggregated Sentiment
+      description: |
+        Combines News, Google Trends, and Polymarket sources.
+        Returns a composite sentiment score and the raw source data.
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+          example: MSFT
+      responses:
+        '200':
+          description: Aggregated sentiment for the given ticker
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  composite:
+                    type: number
+                    example: 67
+                  sources:
+                    type: object
+        '500':
+          description: Sentiment analysis pipeline failed
+
+  /analysis/{ticker}:
+    get:
+      summary: Get Composite Stock Analysis
+      description: |
+        Main orchestration endpoint — combines technical, fundamental, sentiment, insider,
+        and peer data into a weighted composite score.
+
+        The `mode` parameter controls whether the analysis focuses on **short-term**
+        (3-month technical view) or **long-term** (fundamental/sector comparison).
+
+        If `summarize=true` is included, the backend builds an AI-ready prompt using
+        the `build_prompt()` function and attaches a Claude-generated Markdown analysis
+        to the response under `ai_summary`.
+
+        **Scoring Logic Overview:**
+        - *Short-term:* Technicals (EMA, RSI, momentum) + sentiment + earnings growth.
+        - *Long-term:* Fundamentals (growth, ROE, valuation) + peer comparison + insider data.
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          description: Stock ticker symbol.
+          schema:
+            type: string
+          example: AAPL
+        - name: mode
+          in: query
+          required: false
+          description: |
+            Determines analysis mode:
+             - `short`: 3-month technical and momentum-based view.
+             - `long`: Fundamental and peer-comparison-based view.
+          schema:
+            type: string
+            enum: [short, long]
+            default: short
+          example: long
+        - name: summarize
+          in: query
+          required: false
+          description: |
+            If `true`, includes AI summary generated via Claude using
+            the internally constructed prompt.
+          schema:
+            type: string
+            enum: [true, false]
+            default: false
+          example: true
+        - name: age
+          in: query
+          required: false
+          description: User's age range (used for AI personalization).
+          schema:
+            type: string
+            example: 25-35
+        - name: risk_profile
+          in: query
+          required: false
+          description: User's risk tolerance (used for AI personalization).
+          schema:
+            type: string
+            enum: [low, moderate, high]
+            example: moderate
+
+      responses:
+        '200':
+          description: Composite analysis successfully computed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticker:
+                    type: string
+                    example: AAPL
+                  mode:
+                    type: string
+                    enum: [short, long]
+                    example: long
+                  score:
+                    type: number
+                    format: float
+                    example: 81.3
+                  breakdown:
+                    type: object
+                    description: Individual category scores (0–100).
+                    properties:
+                      fundamentals:
+                        type: number
+                        example: 86.5
+                      technical:
+                        type: number
+                        example: 74.3
+                      sentiment:
+                        type: number
+                        example: 68.0
+                      insider:
+                        type: number
+                        example: 59.5
+                      peer:
+                        type: number
+                        example: 72.4
+                  is_blue_chip:
+                    type: boolean
+                    example: true
+                  peer_context:
+                    type: object
+                    nullable: true
+                    description: Only included in long-term analysis.
+                    example:
+                      peers_list: ["MSFT", "GOOG", "META"]
+                      peer_averages:
+                        trailingPE: 28.5
+                        returnOnEquity: 0.24
+                        revenueGrowth: 0.09
+                  momentum:
+                    type: string
+                    nullable: true
+                    description: Only included in short-term analysis (e.g., "bullish", "neutral", "bearish").
+                    example: bullish
+                  ai_summary:
+                    type: string
+                    nullable: true
+                    description: |
+                      AI-generated Markdown summary from Claude,
+                      only returned when `summarize=true`.
+                    example: |
+                      ## **Verdict**
+                      **STRONG BUY**
+
+                      Apple exhibits strong revenue growth and sector-leading fundamentals.
+                      RSI momentum and positive sentiment confirm bullish outlook.
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-11-09T03:12:10Z"
+        '400':
+          description: Invalid ticker or missing data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid ticker symbol or missing fundamentals.
+        '500':
+          description: Internal analysis pipeline error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Analysis failed
+                  details:
+                    type: string
+                    example: "Timeout fetching data from Yahoo Finance"
+components:
+  schemas:
+    BuildPromptRequest:
+      type: object
+      required: [ticker, mode, final_scores]
+      properties:
+        ticker:
+          type: string
+          example: AAPL
+        mode:
+          type: string
+          enum: [short, long]
+          example: long
+        final_scores:
+          type: object
+          properties:
+            score: { type: number, example: 82 }
+            fundamentals: { type: number, example: 85 }
+            technical: { type: number, example: 79 }
+            sentiment: { type: number, example: 74 }
+            insider: { type: number, example: 68 }
+        fundamentals:
+          type: object
+          properties:
+            marketCap: { type: string, example: "$2.9T" }
+            trailingPE: { type: number, example: 28.3 }
+            forwardPE: { type: number, example: 25.1 }
+            dividendYield: { type: string, example: "0.55%" }
+            revenueGrowth: { type: string, example: "12%" }
+        tech_summary:
+          type: object
+          properties:
+            close: { type: number, example: 190.45 }
+            rsi: { type: number, example: 63 }
+            adx: { type: number, example: 22 }
+            ema20: { type: number, example: 187.3 }
+            ema50: { type: number, example: 183.7 }
+            ema200: { type: number, example: 165.2 }
+        user_context:
+          type: object
+          properties:
+            age: { type: string, example: "25-35" }
+            risk: { type: string, example: "moderate" }
+        peer_data:
+          type: object
+          properties:
+            peers_list:
+              type: array
+              items: { type: string }
+              example: ["MSFT", "GOOG", "META"]
+            peer_averages:
+              type: object
+              example:
+                pe: 26.4
+                pb: 8.3
+                roe: "27%"
+
+    BuildPromptResponse:
+      type: object
+      properties:
+        prompt:
+          type: string
+          description: Generated AI prompt in Markdown format.
+          example: |
+            ## **Verdict**
+            **STRONG BUY**
+
+            The company exhibits consistent revenue growth and strong technical momentum
+            within a moderate risk profile...
+
+
+
+x-scripts:
+  - name: build_prompt
+    description: >
+      Internal Python utility function to generate AI-ready Markdown analysis prompts.
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BuildPromptRequest'
+    responses:
+      '200':
+        description: Returns the fully built Markdown prompt string.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildPromptResponse'

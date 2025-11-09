@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
-
 import BrokerDashboardView from "@/components/dashboard/BrokerDashboardView";
 import { Button } from "@/components/ui/button";
 import robinhoodMock from "@/lib/mock-data/robinhood-dashboard.json";
@@ -22,52 +22,107 @@ const BROKER_LINKS = [
     logo: "/images/fidelity.png",
   },
   {
-    label: "E*TRADE",
-    href: "https://us.etrade.com/",
-    accentGradient: "from-fuchsia-400 via-purple-500 to-violet-500",
-    logo: "/images/etrade.png",
+    label: "Acorns",
+    href: "https://acorns.com/",
+    accentGradient: "from-fuchsia-400 via-pink-400 to-rose-500",
+    logo: "/images/acorns.png",
   },
 ];
 
 const ROBINHOOD_DASHBOARD = robinhoodMock as BrokerDashboardData;
-const ROBINHOOD_ACCENT_BORDER = "border-emerald-500/40 bg-emerald-500/10 text-emerald-200";
+const ROBINHOOD_ACCENT_BORDER =
+  "border-emerald-500/40 bg-emerald-500/10 text-emerald-200";
 
 export default function DashboardPage() {
-  return (
-    <div className="space-y-6 sm:space-y-8">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">Dashboard</h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          Monitor every brokerage in one destination with consolidated analytics tuned for high-velocity decision making.
-        </p>
-      </header>
+  const [selectedBroker, setSelectedBroker] = useState<string | null>(null);
 
-      <section className="rounded-[32px] border border-white/10 bg-white/5 p-5 shadow-[0_30px_120px_-80px_rgba(59,130,246,0.6)] backdrop-blur sm:p-7">
-        <div className="mx-auto flex flex-col items-stretch gap-3 sm:max-w-3xl sm:flex-row sm:flex-wrap sm:justify-center lg:max-w-4xl lg:gap-4">
+  useEffect(() => {
+    const stored = localStorage.getItem("selectedBroker");
+    const timestamp = localStorage.getItem("brokerTimestamp");
+
+    if (stored && timestamp) {
+      const diff = Date.now() - Number(timestamp);
+      const tenMinutes = 10 * 60 * 1000;
+      if (diff < tenMinutes) setSelectedBroker(stored);
+      else {
+        localStorage.removeItem("selectedBroker");
+        localStorage.removeItem("brokerTimestamp");
+      }
+    }
+  }, []);
+
+  const handleSelect = (broker: string) => {
+    localStorage.setItem("selectedBroker", broker);
+    localStorage.setItem("brokerTimestamp", Date.now().toString());
+    setSelectedBroker(broker);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("selectedBroker");
+    localStorage.removeItem("brokerTimestamp");
+    setSelectedBroker(null);
+  };
+
+  if (!selectedBroker) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
+      <div className="space-y-4 sm:space-y-6">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+          Welcome to Your Portfolio Dashboard
+        </h1>
+        <p className="max-w-md mx-auto text-sm text-muted-foreground sm:text-base">
+          Log in with one of your brokerages below to view your consolidated
+          portfolio analytics and P&amp;L insights.
+        </p>
+
+        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center lg:gap-4">
           {BROKER_LINKS.map((link) => (
             <Button
               key={link.label}
-              asChild
-              variant="outline"
+              onClick={() => handleSelect(link.label)}
               className={cn(
-                "relative w-full overflow-hidden rounded-full border border-white/10 bg-white/5 px-6 py-4 text-sm font-semibold text-white transition focus-visible:ring-white/40 focus-visible:ring-offset-0 sm:w-auto lg:px-8 lg:py-4 lg:text-base",
+                "relative w-full sm:w-auto overflow-hidden rounded-full border border-white/10 bg-white/5 px-8 py-4 text-base font-semibold text-white transition focus-visible:ring-white/40 focus-visible:ring-offset-0",
                 "bg-gradient-to-r",
                 link.accentGradient,
-                "before:pointer-events-none before:absolute before:inset-0 before:bg-black/0 before:transition before:duration-200 hover:before:bg-black/20",
+                "before:pointer-events-none before:absolute before:inset-0 before:bg-black/0 before:transition before:duration-200 hover:before:bg-black/20"
               )}
             >
-              <a href={link.href} target="_blank" rel="noreferrer">
-                <span className="relative flex items-center justify-center gap-3 text-white">
-                  <span className="flex size-8 items-center justify-center rounded-full bg-white/20">
-                    <Image src={link.logo} alt={`${link.label} logo`} width={20} height={20} className="h-5 w-5 object-contain" />
-                  </span>
-                  <span className="relative z-[1]">{link.label}</span>
+              <span className="relative flex items-center justify-center gap-3 text-white">
+                <span className="flex size-9 items-center justify-center rounded-full bg-white/20">
+                  <Image
+                    src={link.logo}
+                    alt={`${link.label} logo`}
+                    width={24}
+                    height={24}
+                    className="h-6 w-6 object-contain"
+                  />
                 </span>
-              </a>
+                <span className="relative z-[1]">
+                  Login with {link.label}
+                </span>
+              </span>
             </Button>
           ))}
         </div>
-      </section>
+      </div>
+
+      <p className="mt-10 text-xs text-muted-foreground">
+        Session expires automatically after 10 minutes of inactivity.
+      </p>
+    </div>
+  );
+}
+  // When logged in to broker
+  return (
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold sm:text-3xl lg:text-4xl">
+          {selectedBroker} Dashboard
+        </h1>
+        <Button variant="outline" onClick={handleLogout}>
+          Logout
+        </Button>
+      </div>
 
       <BrokerDashboardView
         data={ROBINHOOD_DASHBOARD}

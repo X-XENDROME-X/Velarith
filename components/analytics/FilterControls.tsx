@@ -8,20 +8,16 @@ interface FilterControlsProps {
 	onFiltersChange: (filters: AnalysisFilters) => void;
 }
 
-const TIMEFRAME_OPTIONS = ["Long Term", "Mid Term", "Short Term", "Day Trade"];
+const TIMEFRAME_OPTIONS = ["Long Term", "Short Term"];
 
 const FilterControls = ({ filters, onFiltersChange }: FilterControlsProps) => {
 	const handleTimeframeChange = (timeframe: string) => {
 		onFiltersChange({ ...filters, timeframe });
 	};
 
-	const handlePennyStockToggle = () => {
-		onFiltersChange({ ...filters, pennyStock: !filters.pennyStock });
-	};
-
-	const handleAgeChange = (age: string) => {
-		onFiltersChange({ ...filters, age });
-	};
+	// const handleAgeChange = (age: string) => {
+	// 	onFiltersChange({ ...filters, age });
+	// };
 
 	const handleRiskProfileChange = (riskProfile: string) => {
 		onFiltersChange({ ...filters, riskProfile });
@@ -47,23 +43,13 @@ const FilterControls = ({ filters, onFiltersChange }: FilterControlsProps) => {
 				</div>
 			</div>
 
-			<label className="flex cursor-pointer items-center gap-2 rounded-[16px] border border-white/10 bg-white/5 px-4 py-2.5 backdrop-blur-sm transition hover:bg-white/10 sm:rounded-[20px] sm:py-3">
-				<input
-					type="checkbox"
-					checked={filters.pennyStock}
-					onChange={handlePennyStockToggle}
-					className="size-4 cursor-pointer rounded border-white/20 bg-white/5 text-white accent-white transition focus:ring-2 focus:ring-white/30 focus:ring-offset-0"
-				/>
-				<span className="text-sm text-white sm:text-base">Penny Stock?</span>
-			</label>
-
-			<input
+			{/* <input
 				type="text"
 				value={filters.age}
 				onChange={(e) => handleAgeChange(e.target.value)}
 				placeholder="Age"
 				className="w-[100px] rounded-[16px] border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/40 backdrop-blur-sm transition focus:border-white/30 focus:bg-white/10 focus:outline-none sm:w-[140px] sm:rounded-[20px] sm:py-3 sm:text-base"
-			/>
+			/> */}
 
 			<input
 				type="text"
