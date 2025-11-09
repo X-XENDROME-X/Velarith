@@ -66,7 +66,7 @@ export function Sidebar() {
       {isMobile && (
         <div className="lg:hidden fixed top-0 left-0 right-0 z-[60] h-16 bg-[#0B1120]/98 backdrop-blur-2xl border-b border-white/10 shadow-xl">
           <div className="flex h-full items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-3">
+            <Link href="/dashboard" className="flex items-center gap-3" aria-label="Go to dashboard">
               <div className="relative">
                 <div className="absolute inset-0 bg-cyan-500/30 blur-xl rounded-full" />
                 <Image
@@ -78,7 +78,7 @@ export function Sidebar() {
                 />
               </div>
               <span className="text-lg font-semibold gradient-text">Velarith</span>
-            </div>
+            </Link>
             <button
               onClick={() => setIsMobileOpen(!isMobileOpen)}
               className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
@@ -126,7 +126,7 @@ export function Sidebar() {
           )}
         >
           {!isMobile && (
-            <div className="flex items-center gap-3">
+            <Link href="/dashboard" className="flex items-center gap-3" aria-label="Go to dashboard">
               <div className="flex-shrink-0 relative group">
                 <div className="absolute inset-0 bg-cyan-500/30 blur-2xl rounded-full animate-pulse" />
                 <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full animate-pulse delay-75" />
@@ -143,7 +143,7 @@ export function Sidebar() {
                   Velarith
                 </span>
               )}
-            </div>
+            </Link>
           )}
         </div>
 

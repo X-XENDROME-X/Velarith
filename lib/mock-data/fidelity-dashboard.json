@@ -1,0 +1,104 @@
+{
+  "accountName": "Fidelity Mock",
+  "stats": {
+    "monthlyVolume": {
+      "value": "$842,110.55",
+      "dailyAvg": "$49,536.50",
+      "tradeAvg": "$18,775.10"
+    },
+    "monthlyNetPnl": {
+      "value": "$2,146.88",
+      "totalProfit": "$5,912.44",
+      "totalLoss": "$3,765.56"
+    },
+    "monthlyFees": {
+      "value": "$642.18",
+      "tradeAvg": "$16.92"
+    },
+    "profitFactor": {
+      "value": "1.57",
+      "totalProfit": "$5,912.44",
+      "totalLoss": "$3,765.56"
+    },
+    "daysTraded": {
+      "value": "22 / 31",
+      "daysWon": "15",
+      "daysLost": "7"
+    }
+  },
+  "tradeStatistics": {
+    "totalTrades": 56,
+    "winning": 28,
+    "losing": 19,
+    "breakEven": 9,
+    "longTrades": 38,
+    "shortTrades": 8
+  },
+  "tradePerformance": {
+    "averageWin": "$236.11",
+    "largestWin": "$1,411.06",
+    "averageLoss": "$144.68",
+    "largestLoss": "$612.54"
+  },
+  "winRateStatistics": {
+    "byTrades": 59.82,
+    "byDays": 68.18
+  },
+  "calendar": [
+    {
+      "date": "2025-05-03",
+      "day": 3,
+      "week": "Week 1",
+      "dailyPnl": "+$482.14",
+      "status": "profit",
+      "trades": "3 trades",
+      "twDl": "3W / 0L",
+      "volume": "$81,225.70",
+      "fees": "$54.21"
+    },
+    {
+      "date": "2025-05-06",
+      "day": 6,
+      "week": "Week 1",
+      "dailyPnl": "-$195.32",
+      "status": "loss",
+      "trades": "2 trades",
+      "twDl": "0W / 2L",
+      "volume": "$43,917.55",
+      "fees": "$27.44"
+    },
+    {
+      "date": "2025-05-12",
+      "day": 12,
+      "week": "Week 2",
+      "dailyPnl": "+$1,087.63",
+      "status": "profit",
+      "trades": "4 trades",
+      "twDl": "4W / 0L",
+      "volume": "$92,331.18",
+      "fees": "$68.73"
+    },
+    {
+      "date": "2025-05-18",
+      "day": 18,
+      "week": "Week 3",
+      "dailyPnl": "-$412.85",
+      "status": "loss",
+      "trades": "5 trades",
+      "twDl": "1W / 4L",
+      "volume": "$74,552.34",
+      "fees": "$39.17"
+    },
+    {
+      "date": "2025-05-24",
+      "day": 24,
+      "week": "Week 4",
+      "dailyPnl": "+$926.47",
+      "status": "profit",
+      "trades": "3 trades",
+      "twDl": "3W / 0L",
+      "volume": "$88,014.29",
+      "fees": "$61.05"
+    }
+  ]
+}
