@@ -58,7 +58,7 @@ export function Sidebar() {
       {/* Mobile/Tablet top bar */}
       {isMobile && (
         <div className="lg:hidden fixed top-0 left-0 right-0 z-[60] h-16 bg-[#0B1120]/98 backdrop-blur-2xl border-b border-white/10 shadow-xl">
-          <div className="flex h-full items-center justify-between px-5">
+          <div className="flex h-full items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="absolute inset-0 bg-cyan-500/30 blur-xl rounded-full" />
