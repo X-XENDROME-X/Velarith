@@ -24,31 +24,72 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
 	const [score, setScore] = useState<ScoreBreakdown | null>(null);
 
 	useEffect(() => {
-		const fetchAnalysis = async () => {
-			setIsLoading(true);
-			try {
-				const [aiRes, techRes, fundRes, sentRes, scoreRes] = await Promise.all([
-					fetch(`/api/analyze?symbol=${symbol}&filters=${JSON.stringify(filters)}`),
-					fetch(`/api/stocks/technicals?symbol=${symbol}`),
-					fetch(`/api/stocks/fundamentals?symbol=${symbol}`),
-					fetch(`/api/stocks/sentiment?symbol=${symbol}`),
-					fetch(`/api/stocks/score?symbol=${symbol}`),
-				]);
+        const fetchAiSummary = async () => {
+            console.log("Fetching AI Summary...");
+            setIsLoading(true);
+            setAiAnalysis(null); // Clear old data
 
-				if (aiRes.ok) setAiAnalysis(await aiRes.json());
-				if (techRes.ok) setTechnicals(await techRes.json());
-				if (fundRes.ok) setFundamentals(await fundRes.json());
-				if (sentRes.ok) setSentiment(await sentRes.json());
-				if (scoreRes.ok) setScore(await scoreRes.json());
-			} catch (error) {
-				console.error("Failed to fetch analysis:", error);
-			} finally {
-				setIsLoading(false);
-			}
-		};
+            const API_BASE = "http://127.0.0.1:10000";
+            const params = new URLSearchParams({
+                mode: filters.timeframe || 'long',
+                age: filters.age || '30-40',
+                risk_profile: filters.riskProfile || 'moderate'
+            });
 
-		fetchAnalysis();
-	}, [symbol, filters]);
+            try {
+                const res = await fetch(`${API_BASE}/analysis/ai/${symbol}?${params.toString()}`);
+                if (res.ok) {
+                    setAiAnalysis(await res.json());
+                } else {
+                    console.error("Failed to fetch AI summary", await res.json());
+                }
+            } catch (error) {
+                console.error("AI fetch error:", error);
+            }
+            setIsLoading(false); // Done loading *this* tab
+        };
+
+        // --- NEW: Helper function to fetch Score & Indicators ---
+        const fetchScoreAndIndicators = async () => {
+            console.log("Fetching Score & Indicators...");
+            setIsLoading(true);
+            // Clear all other data
+            setTechnicals(null);
+            setFundamentals(null);
+            setSentiment(null);
+            setScore(null);
+
+            const API_BASE = "http://127.0.0.1:10000";
+
+            try {
+                const [techRes, fundRes, sentRes, scoreRes] = await Promise.allSettled([
+                    fetch(`${API_BASE}/technical/${symbol}`),
+                    fetch(`${API_BASE}/fundamental/${symbol}`),
+                    fetch(`${API_BASE}/sentiment/${symbol}`),
+                    fetch(`${API_BASE}/analysis/score/${symbol}?mode=${filters.timeframe || 'long'}`),
+                ]);
+
+                // Check each result individually
+                if (techRes.status === 'fulfilled' && techRes.value.ok) setTechnicals(await techRes.value.json());
+                if (fundRes.status === 'fulfilled' && fundRes.value.ok) setFundamentals(await fundRes.value.json());
+                if (sentRes.status === 'fulfilled' && sentRes.value.ok) setSentiment(await sentRes.value.json());
+                if (scoreRes.status === 'fulfilled' && scoreRes.value.ok) setScore(await scoreRes.value.json());
+
+            } catch (error) {
+                console.error("Score/Indicators fetch error:", error);
+            }
+            setIsLoading(false); // Done loading *this* tab
+        };
+        
+        if (symbol) {
+            if (activeTab === "ai-summary") {
+                fetchAiSummary();
+            } else if (activeTab === "score-indicators") {
+                fetchScoreAndIndicators();
+            }
+        }
+        // This hook now re-runs when the *active tab* changes
+    }, [symbol, filters, activeTab]);
 
 	return (
 		<div className="flex flex-col overflow-hidden rounded-[20px] border border-white/10 bg-slate-900/70 shadow-[0_20px_70px_-40px_rgba(0,0,0,0.5)] backdrop-blur-sm sm:rounded-[24px] lg:rounded-[28px]">

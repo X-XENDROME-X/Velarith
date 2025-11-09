@@ -6,15 +6,12 @@ from blueprints.technical.signal import compute_signal
 technicals = Blueprint("technical", __name__, url_prefix="/technical")
 
 @technicals.route("/<ticker>", methods=["GET"])
-def analyze_ticker(ticker):
+def get_technicals(ticker):
+    """
+    Returns only the technical summary object for the frontend.
+    """
     summary = get_technical_summary(ticker)
     if "error" in summary:
         return jsonify(summary), 400
 
-    df = fetch_price_data(ticker)
-    df = compute_indicators(df)
-    chart_b64 = plot_technical_chart(df, ticker)
-    signal = compute_signal(summary)
-
-    payload = {**summary, "signal": signal, "chart": chart_b64}
-    return jsonify(payload), 200
+    return jsonify(summary), 200

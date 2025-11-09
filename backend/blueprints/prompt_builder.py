@@ -67,38 +67,33 @@ def build_prompt(ticker: str, mode: str, final_scores: dict, fundamentals: dict 
 
     # --- 4. The Main Prompt Template ---
     return f"""
-You are an expert equity analyst. Generate a clear, concise, and professional analysis.
+You are an expert equity analyst. Your goal is to provide a clear, concise, and professional
+analysis for a user.
 
-⚙️ OUTPUT FORMAT:
-Return ONLY valid JSON, using this exact structure:
+Return your answer as a single, minified JSON object. Do not include "```json" or any
+other text outside of the JSON object.
 
+The JSON object must follow this *exact* structure:
 {{
-  "verdict": "STRONG BUY / HOLD / SELL / etc.",
-  "rationale": "2–3 lines explaining why this verdict was chosen.",
-  "strengths": [
-    "Strong insider buying",
-    "Bullish EMA crossover", 
-    "etc."
-  ],
-  "weaknesses": [
-    "High valuation vs. peers",
-    "Low growth compared to sector"
-    "etc."
-  ],
-  "summary": "2–4 line synthesis of fundamentals, technicals, and sentiment. + advice for the user based on strength and weakness.",
+  "recommendation": "BUY" | "SELL" | "HOLD" | "STRONG_BUY" | "STRONG_SELL",
+  "summary": "A 2-3 line paragraph explaining why this verdict was chosen, referencing the final scores, key indicators, and the user's risk profile.",
+  "strengths": ["1-3 bullet points on the strongest positive signals."],
+  "weaknesses": ["1-3 bullet points on the strongest negative signals or risks."],
+  "fundamentalAnalysis": "A 2-4 line explanation of the combined fundamental and peer picture.",
+  "technicalAnalysis": "A 2-4 line explanation of the technical picture (RSI, MACD, trends)."
 }}
 
-Do not include any extra text, markdown, or commentary outside the JSON object.
-
-Here is all the data for {ticker}. Use it to generate your analysis.
+---
+Here is all the data for {ticker}. Use it to generate your JSON analysis.
+---
 
 {user_section}
 
-Final Scores (0–100):
+Final Scores (0-100):
 • Composite Score: {final_scores.get('score', 'N/A')}
 • Fundamental Score: {final_scores.get('fundamentals', 'N/A')}
 • Technical Score: {final_scores.get('technical', 'N/A')}
-• Sentiment Score: {final_scores.get('sentiment', 'N/A')}
+• Sentiment Score: {final_scores.get('news', 'N/A')}
 • Insider Score: {final_scores.get('insider', 'N/A')}
 
 {tech_section}

@@ -11,7 +11,6 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import { useState } from "react";
 
 interface ChartDataPoint {
   time: string;
@@ -25,6 +24,8 @@ interface InteractiveChartProps {
   currentValue?: string;
   change?: string;
   changePercent?: number;
+  timeRange: string; // <-- New Prop
+  onTimeRangeChange: (newRange: string) => void; // <-- New Prop
 }
 
 const timeRanges = [
@@ -43,8 +44,10 @@ export function InteractiveChart({
   currentValue,
   change,
   changePercent,
+  timeRange,
+  onTimeRangeChange,
 }: InteractiveChartProps) {
-  const [timeRange, setTimeRange] = useState("1d");
+  // Local state is removed. The component is now controlled by its parent.
 
   return (
     <Card className="p-4 sm:p-6">
@@ -70,8 +73,8 @@ export function InteractiveChart({
             )}
           </div>
           
-          {/* Time Range Selector */}
-          <Tabs value={timeRange} onValueChange={setTimeRange}>
+          {/* Time Range Selector now uses props */}
+          <Tabs value={timeRange} onValueChange={onTimeRangeChange}>
             <TabsList className="grid grid-cols-7 w-full sm:w-fit">
               {timeRanges.map((range) => (
                 <TabsTrigger
@@ -113,7 +116,8 @@ export function InteractiveChart({
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${value}`}
+                tickFormatter={(value) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                domain={['dataMin - (dataMax - dataMin) * 0.1', 'dataMax + (dataMax - dataMin) * 0.1']}
               />
               <Tooltip
                 content={({ active, payload }) => {
@@ -124,13 +128,8 @@ export function InteractiveChart({
                           {payload[0].payload.time}
                         </p>
                         <p className="text-lg font-bold">
-                          ${payload[0].value}
+                          ${Number(payload[0].value).toLocaleString(undefined, { style: 'currency', currency: 'USD' })}
                         </p>
-                        {payload[0].payload.volume && (
-                          <p className="text-xs text-muted-foreground">
-                            Volume: ${payload[0].payload.volume.toLocaleString()}
-                          </p>
-                        )}
                       </div>
                     );
                   }
