@@ -9,7 +9,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 # (FIX 1: Imports now match your file structure)
 from blueprints.technicals import technicals
 from blueprints.fundamentals import fund_bp
-from blueprints.sentiments import sent_bp, macro_bp  # Import both from sentiments.py
+from blueprints.sentiments import sentiment_bp as sent_bp
 from blueprints.analysis import an_bp 
 from blueprints.prompt import prompt_bp
 
@@ -22,7 +22,6 @@ CORS(app, supports_credentials=True)
 app.register_blueprint(technicals)
 app.register_blueprint(fund_bp)
 app.register_blueprint(sent_bp)
-app.register_blueprint(macro_bp)
 app.register_blueprint(an_bp)  # This provides the /analysis/<ticker> endpoint
 app.register_blueprint(prompt_bp)
 

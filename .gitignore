@@ -4,10 +4,12 @@
 
 # --- Python ---
 # Ignore the virtual environment
-env/
+env
 
 # Ignore Python cache files
 __pycache__/
+blueprints/__pycache__/
+blueprints/**/__pycache__/
 *.pyc
 
 # --- macOS ---

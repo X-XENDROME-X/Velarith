@@ -51,7 +51,6 @@ paths:
           content:
             application/json:
               schema:
-                # This response matches your 'technicals.py' blueprint
                 type: object 
         '400':
           description: Invalid ticker or data fetch failure
@@ -75,7 +74,6 @@ paths:
           content:
             application/json:
               schema:
-                # This is the new, flat structure from 'fundamental_core.py'
                 type: object
                 properties:
                   ticker:
@@ -152,7 +150,6 @@ paths:
           content:
             application/json:
               schema:
-                # This matches your 'sentiments.py' blueprint
                 type: object
                 properties:
                   composite:
@@ -174,69 +171,252 @@ paths:
           content:
             application/json:
               schema:
-                # This matches your 'macro_blueprint.py'
                 type: array
                 items:
                   type: object
 
   /analysis/{ticker}:
     get:
-      summary: Get Composite Analysis Score
+      summary: Get Composite Stock Analysis
       description: |
-        The main endpoint. Orchestrates all modules (tech, fundamental,
-        sentiment, peer) to generate a final weighted score.
+        Main orchestration endpoint — combines technical, fundamental, sentiment, insider,
+        and peer data into a weighted composite score.
+
+        The `mode` parameter controls whether the analysis focuses on **short-term**
+        (3-month technical view) or **long-term** (fundamental/sector comparison).
+
+        If `summarize=true` is included, the backend builds an AI-ready prompt using
+        the `build_prompt()` function and attaches a Claude-generated Markdown analysis
+        to the response under `ai_summary`.
+
+        **Scoring Logic Overview:**
+        - *Short-term:* Technicals (EMA, RSI, momentum) + sentiment + earnings growth.
+        - *Long-term:* Fundamentals (growth, ROE, valuation) + peer comparison + insider data.
       parameters:
         - name: ticker
           in: path
           required: true
+          description: Stock ticker symbol.
           schema:
             type: string
           example: AAPL
         - name: mode
           in: query
           required: false
-          description: "Analysis mode: 'short' or 'long'. Defaults to 'short'."
+          description: |
+            Determines analysis mode:
+             - `short`: 3-month technical and momentum-based view.
+             - `long`: Fundamental and peer-comparison-based view.
           schema:
             type: string
             enum: [short, long]
             default: short
+          example: long
+        - name: summarize
+          in: query
+          required: false
+          description: |
+            If `true`, includes AI summary generated via Claude using
+            the internally constructed prompt.
+          schema:
+            type: string
+            enum: [true, false]
+            default: false
+          example: true
+        - name: age
+          in: query
+          required: false
+          description: User's age range (used for AI personalization).
+          schema:
+            type: string
+            example: 25-35
+        - name: risk_profile
+          in: query
+          required: false
+          description: User's risk tolerance (used for AI personalization).
+          schema:
+            type: string
+            enum: [low, moderate, high]
+            example: moderate
+
       responses:
         '200':
-          description: Successful analysis
+          description: Composite analysis successfully computed.
           content:
             application/json:
               schema:
-                # This matches your 'analysis.py' blueprint
                 type: object
                 properties:
-                  mode:
-                    type: string
-                    example: long
                   ticker:
                     type: string
                     example: AAPL
+                  mode:
+                    type: string
+                    enum: [short, long]
+                    example: long
                   score:
                     type: number
                     format: float
-                    example: 78.5
+                    example: 81.3
                   breakdown:
                     type: object
-                    description: The individual scores that make up the final score
+                    description: Individual category scores (0–100).
                     properties:
                       fundamentals:
                         type: number
-                        example: 85.0
-                      peer:
+                        example: 86.5
+                      technical:
                         type: number
-                        example: 72.0
+                        example: 74.3
                       sentiment:
                         type: number
-                        example: 65.0
+                        example: 68.0
                       insider:
                         type: number
-                        example: 50.0
+                        example: 59.5
+                      peer:
+                        type: number
+                        example: 72.4
+                  is_blue_chip:
+                    type: boolean
+                    example: true
+                  peer_context:
+                    type: object
+                    nullable: true
+                    description: Only included in long-term analysis.
+                    example:
+                      peers_list: ["MSFT", "GOOG", "META"]
+                      peer_averages:
+                        trailingPE: 28.5
+                        returnOnEquity: 0.24
+                        revenueGrowth: 0.09
+                  momentum:
+                    type: string
+                    nullable: true
+                    description: Only included in short-term analysis (e.g., "bullish", "neutral", "bearish").
+                    example: bullish
+                  ai_summary:
+                    type: string
+                    nullable: true
+                    description: |
+                      AI-generated Markdown summary from Claude,
+                      only returned when `summarize=true`.
+                    example: |
+                      ## **Verdict**
+                      **STRONG BUY**
+
+                      Apple exhibits strong revenue growth and sector-leading fundamentals.
+                      RSI momentum and positive sentiment confirm bullish outlook.
                   timestamp:
                     type: string
                     format: date-time
+                    example: "2025-11-09T03:12:10Z"
         '400':
-          description: Invalid ticker or data fetch failure
+          description: Invalid ticker or missing data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid ticker symbol or missing fundamentals.
+        '500':
+          description: Internal analysis pipeline error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Analysis failed
+                  details:
+                    type: string
+                    example: "Timeout fetching data from Yahoo Finance"
+components:
+  schemas:
+    BuildPromptRequest:
+      type: object
+      required: [ticker, mode, final_scores]
+      properties:
+        ticker:
+          type: string
+          example: AAPL
+        mode:
+          type: string
+          enum: [short, long]
+          example: long
+        final_scores:
+          type: object
+          properties:
+            score: { type: number, example: 82 }
+            fundamentals: { type: number, example: 85 }
+            technical: { type: number, example: 79 }
+            sentiment: { type: number, example: 74 }
+            insider: { type: number, example: 68 }
+        fundamentals:
+          type: object
+          properties:
+            marketCap: { type: string, example: "$2.9T" }
+            trailingPE: { type: number, example: 28.3 }
+            forwardPE: { type: number, example: 25.1 }
+            dividendYield: { type: string, example: "0.55%" }
+            revenueGrowth: { type: string, example: "12%" }
+        tech_summary:
+          type: object
+          properties:
+            close: { type: number, example: 190.45 }
+            rsi: { type: number, example: 63 }
+            adx: { type: number, example: 22 }
+            ema20: { type: number, example: 187.3 }
+            ema50: { type: number, example: 183.7 }
+            ema200: { type: number, example: 165.2 }
+        user_context:
+          type: object
+          properties:
+            age: { type: string, example: "25-35" }
+            risk: { type: string, example: "moderate" }
+        peer_data:
+          type: object
+          properties:
+            peers_list:
+              type: array
+              items: { type: string }
+              example: ["MSFT", "GOOG", "META"]
+            peer_averages:
+              type: object
+              example:
+                pe: 26.4
+                pb: 8.3
+                roe: "27%"
+
+    BuildPromptResponse:
+      type: object
+      properties:
+        prompt:
+          type: string
+          description: Generated AI prompt in Markdown format.
+          example: |
+            ## **Verdict**
+            **STRONG BUY**
+
+            The company exhibits consistent revenue growth and strong technical momentum
+            within a moderate risk profile...
+
+x-scripts:
+  - name: build_prompt
+    description: >
+      Internal Python utility function to generate AI-ready Markdown analysis prompts.
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BuildPromptRequest'
+    responses:
+      '200':
+        description: Returns the fully built Markdown prompt string.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildPromptResponse'
