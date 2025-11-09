@@ -9,10 +9,9 @@ from flask_swagger_ui import get_swaggerui_blueprint
 # --- Blueprints ---
 from blueprints.technicals import technicals as tech_bp
 from blueprints.sentiments import sentiment_bp
-# MERGED: Added import for the fundamentals blueprint from app_f.py
-# Note: I've standardized the import path to match the others.
-# Please ensure your fundamentals blueprint is located at 'blueprints/fundamentals.py'
 from blueprints.fundamentals import fund_bp
+
+
 
 
 # Optional (macro market context)
