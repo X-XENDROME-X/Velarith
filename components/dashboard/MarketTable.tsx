@@ -76,47 +76,50 @@ export function MarketTable({ markets }: MarketTableProps) {
 
   return (
     <Card>
-      <div className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Live Markets</h3>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Market</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => requestSort("yesPrice")}
-              >
-                <div className="flex items-center gap-1">
-                  Yes/No Odds
-                  <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => requestSort("volume24h")}
-              >
-                <div className="flex items-center gap-1">
-                  24h Volume
-                  <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => requestSort("change24h")}
-              >
-                <div className="flex items-center gap-1">
-                  24h Change
-                  <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
-              <TableHead>Expiry</TableHead>
-              <TableHead className="text-right">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedMarkets.map((market) => (
-              <TableRow key={market.id} className="hover:bg-muted/50">
+      <div className="p-4 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold mb-4">Live Markets</h3>
+        
+        {/* Desktop Table View */}
+        <div className="hidden lg:block overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Market</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead
+                  className="cursor-pointer"
+                  onClick={() => requestSort("yesPrice")}
+                >
+                  <div className="flex items-center gap-1">
+                    Yes/No Odds
+                    <ArrowUpDown className="h-4 w-4" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer"
+                  onClick={() => requestSort("volume24h")}
+                >
+                  <div className="flex items-center gap-1">
+                    24h Volume
+                    <ArrowUpDown className="h-4 w-4" />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer"
+                  onClick={() => requestSort("change24h")}
+                >
+                  <div className="flex items-center gap-1">
+                    24h Change
+                    <ArrowUpDown className="h-4 w-4" />
+                  </div>
+                </TableHead>
+                <TableHead>Expiry</TableHead>
+                <TableHead className="text-right">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedMarkets.map((market) => (
+                <TableRow key={market.id} className="hover:bg-muted/50">
                 <TableCell className="font-medium max-w-xs">
                   <div className="truncate">{market.name}</div>
                 </TableCell>
@@ -168,6 +171,74 @@ export function MarketTable({ markets }: MarketTableProps) {
             ))}
           </TableBody>
         </Table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden space-y-3">
+          {sortedMarkets.map((market) => (
+            <div
+              key={market.id}
+              className="border border-border rounded-lg p-4 space-y-3 hover:bg-muted/50 transition-colors"
+            >
+              {/* Market Name & Category */}
+              <div className="space-y-2">
+                <p className="font-medium text-sm leading-tight">{market.name}</p>
+                <Badge variant="outline" className={getCategoryColor(market.category)}>
+                  {market.category}
+                </Badge>
+              </div>
+
+              {/* Market Stats Grid */}
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Yes/No Odds</p>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-success/10 text-success border-success/20">
+                      {(market.yesPrice * 100).toFixed(0)}%
+                    </Badge>
+                    <Badge variant="outline" className="bg-danger/10 text-danger border-danger/20">
+                      {(market.noPrice * 100).toFixed(0)}%
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">24h Volume</p>
+                  <p className="font-mono font-medium">${(market.volume24h / 1000000).toFixed(2)}M</p>
+                </div>
+
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">24h Change</p>
+                  <div
+                    className={`flex items-center gap-1 ${
+                      market.change24h >= 0 ? "text-success" : "text-danger"
+                    }`}
+                  >
+                    {market.change24h >= 0 ? (
+                      <TrendingUp className="h-3.5 w-3.5" />
+                    ) : (
+                      <TrendingDown className="h-3.5 w-3.5" />
+                    )}
+                    <span className="font-medium text-sm">
+                      {market.change24h > 0 ? "+" : ""}
+                      {market.change24h.toFixed(2)}%
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Expiry</p>
+                  <p className="text-sm">{market.expiryDate}</p>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <Button variant="outline" size="sm" className="w-full">
+                View Market
+              </Button>
+            </div>
+          ))}
+        </div>
       </div>
     </Card>
   );

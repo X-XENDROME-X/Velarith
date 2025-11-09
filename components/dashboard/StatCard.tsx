@@ -32,28 +32,28 @@ export function StatCard({
   };
 
   return (
-    <Card className="p-6 hover:shadow-lg transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-bold tracking-tight">{value}</p>
+    <Card className="p-4 sm:p-6 hover:shadow-lg transition-shadow">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1.5 sm:space-y-2 flex-1 min-w-0">
+          <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
+          <p className="text-2xl sm:text-3xl font-bold tracking-tight truncate">{value}</p>
           {(change !== undefined || changeLabel) && (
-            <div className={cn("flex items-center gap-1 text-sm", getTrendColor())}>
+            <div className={cn("flex items-center gap-1 text-xs sm:text-sm flex-wrap", getTrendColor())}>
               {trend && getTrendIcon()}
               {change !== undefined && (
-                <span className="font-medium">
+                <span className="font-medium whitespace-nowrap">
                   {change > 0 ? "+" : ""}
                   {change}%
                 </span>
               )}
               {changeLabel && (
-                <span className="text-muted-foreground">{changeLabel}</span>
+                <span className="text-muted-foreground truncate">{changeLabel}</span>
               )}
             </div>
           )}
         </div>
         {icon && (
-          <div className="rounded-lg bg-primary/10 p-3 text-primary">
+          <div className="rounded-lg bg-primary/10 p-2.5 sm:p-3 text-primary flex-shrink-0">
             {icon}
           </div>
         )}
