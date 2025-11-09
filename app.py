@@ -112,5 +112,4 @@ def index():
 
 # --- Entry Point ---
 if __name__ == "__main__":
-    # The port is kept at 10000 as defined in the original app.py
     app.run(debug=True, port=10000, host="0.0.0.0")
