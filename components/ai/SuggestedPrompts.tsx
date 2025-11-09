@@ -16,8 +16,8 @@ interface SuggestedPromptsProps {
 const suggestions = [
   {
     icon: TrendingUp,
-    title: "Market Analysis",
-    prompt: "Analyze the current trends in the crypto prediction markets",
+    title: "Market Trends",
+    prompt: "Analyze the current market trends across major indices. What sectors are showing strength and which are lagging? Include SPY, QQQ momentum analysis.",
     color: "from-cyan-500 via-cyan-400 to-teal-500",
     hoverBorder: "hover:border-cyan-400/80",
     focusRing: "focus-visible:ring-cyan-400/50",
@@ -25,8 +25,8 @@ const suggestions = [
   },
   {
     icon: DollarSign,
-    title: "Volume Insights",
-    prompt: "What markets have the highest trading volume today?",
+    title: "Top Opportunities",
+    prompt: "What are the best trading opportunities right now based on technical indicators? Focus on stocks with strong momentum and clear entry points.",
     color: "from-green-500 via-emerald-500 to-teal-400",
     hoverBorder: "hover:border-emerald-400/80",
     focusRing: "focus-visible:ring-emerald-400/50",
@@ -34,8 +34,8 @@ const suggestions = [
   },
   {
     icon: Target,
-    title: "Best Opportunities",
-    prompt: "Which prediction markets offer the best opportunities right now?",
+    title: "Risk Analysis",
+    prompt: "Analyze the current market risk environment. What are the key risks to watch? Provide insights on volatility levels, economic indicators, and potential catalysts.",
     color: "from-indigo-500 via-purple-500 to-violet-500",
     hoverBorder: "hover:border-purple-400/80",
     focusRing: "focus-visible:ring-purple-400/50",
@@ -43,8 +43,8 @@ const suggestions = [
   },
   {
     icon: BarChart3,
-    title: "Price Predictions",
-    prompt: "Predict the probability changes for top markets in the next 24 hours",
+    title: "Technical Breakdown",
+    prompt: "Give me a detailed technical analysis breakdown including key support/resistance levels, RSI readings, MACD signals, and volume patterns for SPY.",
     color: "from-orange-500 via-amber-500 to-rose-500",
     hoverBorder: "hover:border-amber-400/80",
     focusRing: "focus-visible:ring-amber-400/50",
@@ -52,8 +52,8 @@ const suggestions = [
   },
   {
     icon: Lightbulb,
-    title: "Strategy Tips",
-    prompt: "Give me strategies for trading in volatile prediction markets",
+    title: "Trading Strategy",
+    prompt: "Suggest a swing trading strategy for the next week based on current market conditions. Include entry points, stop losses, and profit targets.",
     color: "from-yellow-500 via-amber-400 to-orange-500",
     hoverBorder: "hover:border-yellow-400/80",
     focusRing: "focus-visible:ring-yellow-400/50",
@@ -61,8 +61,8 @@ const suggestions = [
   },
   {
     icon: AlertTriangle,
-    title: "Risk Assessment",
-    prompt: "What are the risks I should be aware of in current markets?",
+    title: "Portfolio Review",
+    prompt: "Help me review my portfolio allocation. I need advice on diversification, sector exposure, and risk management for a medium-risk tolerance investor.",
     color: "from-rose-500 via-pink-500 to-purple-500",
     hoverBorder: "hover:border-rose-400/80",
     focusRing: "focus-visible:ring-rose-400/50",

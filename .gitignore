@@ -34,3 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+docs/AI_ASSISTANT_QUICKSTART.md
+docs/AI_ASSISTANT_SETUP.md
+docs/AI_ASSISTANT_IMPROVEMENTS.md
