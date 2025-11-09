@@ -47,18 +47,18 @@ export function InteractiveChart({
   const [timeRange, setTimeRange] = useState("1d");
 
   return (
-    <Card className="p-6">
+    <Card className="p-4 sm:p-6">
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="text-lg font-semibold">{title}</h3>
+        <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base sm:text-lg font-semibold truncate">{title}</h3>
             {currentValue && (
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-3xl font-bold">{currentValue}</span>
+              <div className="mt-2 flex items-baseline gap-2 flex-wrap">
+                <span className="text-2xl sm:text-3xl font-bold">{currentValue}</span>
                 {change && changePercent !== undefined && (
                   <span
-                    className={`text-sm font-medium ${
+                    className={`text-xs sm:text-sm font-medium ${
                       changePercent >= 0 ? "text-success" : "text-danger"
                     }`}
                   >
@@ -72,12 +72,12 @@ export function InteractiveChart({
           
           {/* Time Range Selector */}
           <Tabs value={timeRange} onValueChange={setTimeRange}>
-            <TabsList className="grid grid-cols-7 w-fit">
+            <TabsList className="grid grid-cols-7 w-full sm:w-fit">
               {timeRanges.map((range) => (
                 <TabsTrigger
                   key={range.value}
                   value={range.value}
-                  className="text-xs px-3"
+                  className="text-xs px-2 sm:px-3"
                 >
                   {range.label}
                 </TabsTrigger>
@@ -87,7 +87,7 @@ export function InteractiveChart({
         </div>
 
         {/* Chart */}
-        <div className="h-[300px] w-full">
+        <div className="h-[250px] sm:h-[300px] lg:h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data}>
               <defs>
