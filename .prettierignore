@@ -1,0 +1,9 @@
+.next/
+node_modules/
+backend/env/
+backend/venv/
+backend/__pycache__/
+.agents/
+*.lock
+package-lock.json
+public/
