@@ -45,6 +45,7 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+backend/.env
 
 # vercel
 .vercel
@@ -53,7 +54,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# AI Assistant documentation (optional - remove if you want to track these)
-docs/AI_ASSISTANT_QUICKSTART.md
-docs/AI_ASSISTANT_SETUP.md
-docs/AI_ASSISTANT_IMPROVEMENTS.md
+# --- AI Agent context (gitignored per-workspace) ---
+# Root AGENTS.md stays tracked; .agents/ folder is local context
+.agents/
