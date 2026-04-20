@@ -34,13 +34,18 @@ SMITHERY_API_KEY = os.getenv("SMITHERY_API_KEY")
 SMITHERY_PROFILE = os.getenv("SMITHERY_PROFILE")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
+# --- M1 START: env-driven model + guarded client init ---
+CLAUDE_MODEL = os.getenv("AI_PRIMARY_MODEL", "claude-sonnet-4-5-20250929")
+
 if not SMITHERY_API_KEY:
     print("[Polymarket] ⚠️ SMITHERY_API_KEY not set in environment")
 if not ANTHROPIC_API_KEY:
     print("[Polymarket] ⚠️ ANTHROPIC_API_KEY not set in environment")
 
-# --- Anthropic client ---
-anthropic_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+# Guard against missing key so the module still imports cleanly (falls back to
+# rule-based sentiment downstream instead of crashing on import).
+anthropic_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
+# --- M1 END ---
 
 
 # --- fallback macro-level topics for broader sentiment coverage ---
@@ -172,9 +177,12 @@ Guidelines:
 - Weigh probability and number of active markets for each tone.
 """
 
+    if anthropic_client is None:
+        return {"trend": "neutral", "impact": 0}
+
     try:
         response = anthropic_client.messages.create(
-            model="claude-3-haiku-20240307",
+            model=CLAUDE_MODEL,
             max_tokens=300,
             temperature=0.3,
             messages=[{"role": "user", "content": prompt}],
@@ -247,9 +255,16 @@ Rules:
 - Then factor in macro tone and its 'impact'.
 """
 
+    if anthropic_client is None:
+        return {
+            "score": 50,
+            "summary": "AI scoring unavailable (ANTHROPIC_API_KEY not set).",
+            "macro": {"trend": "unknown", "impact": 0, "adjusted_score": 50},
+        }
+
     try:
         response = anthropic_client.messages.create(
-            model="claude-3-haiku-20240307",
+            model=CLAUDE_MODEL,
             max_tokens=500,
             temperature=0.3,
             messages=[{"role": "user", "content": prompt}],

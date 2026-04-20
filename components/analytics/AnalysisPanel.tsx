@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils";
 import AIAnalysisView from "./AIAnalysisView";
 import ScoreIndicatorsView from "./ScoreIndicatorsView";
 
+// Backend URL — env-driven for prod, localhost fallback for dev
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:10000";
+
 interface AnalysisPanelProps {
 	symbol: string;
 	filters: AnalysisFilters;
@@ -29,7 +32,6 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
             setIsLoading(true);
             setAiAnalysis(null); // Clear old data
 
-            const API_BASE = "http://127.0.0.1:10000";
             const params = new URLSearchParams({
                 mode: filters.timeframe || 'long',
                 age: filters.age || '30-40',
@@ -58,8 +60,6 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
             setFundamentals(null);
             setSentiment(null);
             setScore(null);
-
-            const API_BASE = "http://127.0.0.1:10000";
 
             try {
                 const [techRes, fundRes, sentRes, scoreRes] = await Promise.allSettled([

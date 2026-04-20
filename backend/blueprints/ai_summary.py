@@ -1,16 +1,26 @@
 import os
 import anthropic
 
-# Initialize the client (it will auto-find the API key)
-try:
-    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-    CLAUDE_MODEL = "claude-3-haiku-20240307" # Fastest and great for this
-    HAS_CLAUDE = True
-except Exception as e:
-    print(f"[WARN] Claude client failed to initialize: {e}")
-    print("[WARN] AI Summaries will be disabled.")
+# --- M1 START: env-driven model + key handling (replaces hardcoded haiku) ---
+# Full multi-provider routing (Claude primary + Groq fallback) lands in M3 via
+# backend/services/ai_provider.py. This is a stopgap so the model isn't frozen.
+CLAUDE_MODEL = os.environ.get("AI_PRIMARY_MODEL", "claude-sonnet-4-5-20250929")
+_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+
+if _API_KEY:
+    try:
+        client = anthropic.Anthropic(api_key=_API_KEY)
+        HAS_CLAUDE = True
+    except Exception as e:
+        print(f"[WARN] Claude client failed to initialize: {e}")
+        print("[WARN] AI Summaries will be disabled.")
+        HAS_CLAUDE = False
+        client = None
+else:
+    print("[WARN] ANTHROPIC_API_KEY not set — AI Summaries disabled.")
     HAS_CLAUDE = False
     client = None
+# --- M1 END ---
 
 def get_claude_analysis(prompt: str) -> str:
     """

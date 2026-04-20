@@ -54,6 +54,7 @@ backend/.env
 *.tsbuildinfo
 next-env.d.ts
 
-# --- AI Agent context (gitignored per-workspace) ---
-# Root AGENTS.md stays tracked; .agents/ folder is local context
+# --- AI Agent context & internal docs (gitignored per-workspace, not shipped to main) ---
 .agents/
+AGENTS.md
+docs/
