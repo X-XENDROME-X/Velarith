@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Trash2, Star } from "lucide-react";
+import { Trash2, Star, LineChart as LineIcon } from "lucide-react";
 import { fetchMarket, type MarketCard as MarketCardData } from "@/lib/api/backend";
 import { MarketCard } from "./MarketCard";
 import { MarketGridSkeleton } from "./MarketGrid";
 import { useWatchlist } from "@/lib/hooks/useWatchlist";
 import { TickerAutocomplete } from "./TickerAutocomplete";
+import { RetryError } from "@/components/ui/RetryError";
 
 interface StockQuote {
   symbol: string;
@@ -20,20 +21,27 @@ export function WatchlistTab() {
   const { markets: watchMarkets, tickers, hydrated, removeTicker } = useWatchlist();
   const [liveMarkets, setLiveMarkets] = useState<MarketCardData[]>([]);
   const [marketsLoading, setMarketsLoading] = useState(false);
+  const [marketsError, setMarketsError] = useState<string | null>(null);
   const [quotes, setQuotes] = useState<StockQuote[]>([]);
   const [quotesLoading, setQuotesLoading] = useState(false);
+  const [reload, setReload] = useState(0);
 
   // Refresh live market data whenever the saved slugs change.
   useEffect(() => {
     if (!hydrated || watchMarkets.length === 0) {
       setLiveMarkets([]);
+      setMarketsError(null);
       return;
     }
     const ctrl = new AbortController();
     setMarketsLoading(true);
+    setMarketsError(null);
     Promise.all(
       watchMarkets.map((m) =>
-        fetchMarket(m.slug, { signal: ctrl.signal }).catch(() => null),
+        fetchMarket(m.slug, { signal: ctrl.signal }).catch((e) => {
+          if (e?.name === "AbortError") throw e;
+          return null;
+        }),
       ),
     )
       .then((results) => {
@@ -55,10 +63,17 @@ export function WatchlistTab() {
           }
         }
         setLiveMarkets(live);
+        if (results.length > 0 && live.length === 0) {
+          setMarketsError("Couldn't refresh any watched markets.");
+        }
+      })
+      .catch((e) => {
+        if (e?.name === "AbortError") return;
+        setMarketsError(e?.message ?? "Couldn't refresh watched markets.");
       })
       .finally(() => setMarketsLoading(false));
     return () => ctrl.abort();
-  }, [hydrated, watchMarkets]);
+  }, [hydrated, watchMarkets, reload]);
 
   // Refresh ticker quotes.
   useEffect(() => {
@@ -105,6 +120,13 @@ export function WatchlistTab() {
           </div>
           {marketsLoading && liveMarkets.length === 0 ? (
             <MarketGridSkeleton count={Math.min(4, watchMarkets.length)} />
+          ) : marketsError && liveMarkets.length === 0 ? (
+            <RetryError
+              title="Couldn't refresh your watchlist."
+              description="Backend may be cold-starting. Try again."
+              onRetry={() => setReload((n) => n + 1)}
+              loading={marketsLoading}
+            />
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {liveMarkets.map((m) => (
@@ -169,6 +191,14 @@ export function WatchlistTab() {
                       {quotesLoading ? "…" : "—"}
                     </span>
                   )}
+                  <Link
+                    href={`/markets?q=${encodeURIComponent(t.symbol)}`}
+                    aria-label={`Find markets related to ${t.symbol}`}
+                    title="Find related markets"
+                    className="rounded-lg border border-white/10 p-2 text-white/40 transition hover:border-cyan-500/40 hover:text-cyan-300"
+                  >
+                    <LineIcon className="size-3.5" />
+                  </Link>
                   <button
                     type="button"
                     onClick={() => removeTicker(t.symbol)}

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Star, ArrowUpRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Star, ArrowUpRight, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MarketCard as MarketCardData } from "@/lib/api/backend";
 import { useWatchlist } from "@/lib/hooks/useWatchlist";
@@ -16,6 +17,7 @@ interface MarketCardProps {
 }
 
 export function MarketCard({ market, compact = false }: MarketCardProps) {
+  const router = useRouter();
   const { isMarketSaved, toggleMarket } = useWatchlist();
   const saved = isMarketSaved(market.slug);
   const positive = market.change24h >= 0;
@@ -28,6 +30,12 @@ export function MarketCard({ market, compact = false }: MarketCardProps) {
       question: market.question,
       category: market.category,
     });
+  };
+
+  const handleAsk = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/assistant?market=${market.slug}`);
   };
 
   return (
@@ -61,20 +69,31 @@ export function MarketCard({ market, compact = false }: MarketCardProps) {
             <h3 className="flex-1 text-sm font-semibold leading-snug text-white line-clamp-2">
               {market.question}
             </h3>
-            <button
-              type="button"
-              onClick={handleToggleWatch}
-              aria-label={saved ? "Remove from watchlist" : "Add to watchlist"}
-              aria-pressed={saved}
-              className={cn(
-                "rounded-lg border p-1.5 transition",
-                saved
-                  ? "border-amber-400/40 bg-amber-400/10 text-amber-300"
-                  : "border-white/10 bg-white/5 text-white/50 hover:border-white/20 hover:text-white",
-              )}
-            >
-              <Star className={cn("size-3.5", saved && "fill-current")} />
-            </button>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={handleAsk}
+                aria-label="Ask Claude about this market"
+                title="Ask Claude about this market"
+                className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-white/50 transition hover:border-cyan-500/40 hover:text-cyan-300"
+              >
+                <MessageSquare className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={handleToggleWatch}
+                aria-label={saved ? "Remove from watchlist" : "Add to watchlist"}
+                aria-pressed={saved}
+                className={cn(
+                  "rounded-lg border p-1.5 transition",
+                  saved
+                    ? "border-amber-400/40 bg-amber-400/10 text-amber-300"
+                    : "border-white/10 bg-white/5 text-white/50 hover:border-white/20 hover:text-white",
+                )}
+              >
+                <Star className={cn("size-3.5", saved && "fill-current")} />
+              </button>
+            </div>
           </div>
           <div className="mt-1.5 flex items-center gap-2 text-[11px] text-white/50">
             <CategoryBadge category={market.category} />

@@ -10,6 +10,7 @@ import {
 } from "@/lib/api/backend";
 import { CategoryChips } from "./CategoryChips";
 import { MarketGrid, MarketGridSkeleton } from "./MarketGrid";
+import { RetryError } from "@/components/ui/RetryError";
 
 type SortKey = "volume" | "movers" | "liquidity" | "endingSoon";
 
@@ -29,6 +30,7 @@ export function DiscoverTab({
   const [markets, setMarkets] = useState<MarketCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   // Debounce search input (300ms).
   useEffect(() => {
@@ -36,7 +38,7 @@ export function DiscoverTab({
     return () => clearTimeout(t);
   }, [query]);
 
-  // Fetch whenever the debounced query or category changes.
+  // Fetch whenever the debounced query, category, or reload trigger changes.
   useEffect(() => {
     const ctrl = new AbortController();
     setLoading(true);
@@ -54,7 +56,7 @@ export function DiscoverTab({
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
-  }, [debounced, category]);
+  }, [debounced, category, reload]);
 
   const sorted = useMemo(() => {
     const copy = [...markets];
@@ -108,9 +110,12 @@ export function DiscoverTab({
       {loading ? (
         <MarketGridSkeleton count={8} />
       ) : error ? (
-        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-200">
-          {error}
-        </div>
+        <RetryError
+          title="Couldn't load markets."
+          description="Backend may still be waking up."
+          onRetry={() => setReload((n) => n + 1)}
+          loading={loading}
+        />
       ) : (
         <>
           <div className="text-xs text-white/40">

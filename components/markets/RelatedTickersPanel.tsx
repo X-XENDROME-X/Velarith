@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LineChart as LineIcon, Plus, Check } from "lucide-react";
 import { fetchRelatedTickers, type RelatedTicker } from "@/lib/api/backend";
 import { useWatchlist } from "@/lib/hooks/useWatchlist";
+import { RetryError } from "@/components/ui/RetryError";
 import { cn } from "@/lib/utils";
 
 interface StockQuote {
@@ -23,6 +24,7 @@ export function RelatedTickersPanel({ slug }: RelatedTickersPanelProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quotes, setQuotes] = useState<Record<string, StockQuote>>({});
+  const [reload, setReload] = useState(0);
   const { addTicker, isTickerSaved } = useWatchlist();
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export function RelatedTickersPanel({ slug }: RelatedTickersPanelProps) {
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
-  }, [slug]);
+  }, [slug, reload]);
 
   useEffect(() => {
     if (tickers.length === 0) return;
@@ -79,7 +81,15 @@ export function RelatedTickersPanel({ slug }: RelatedTickersPanelProps) {
       )}
 
       {error && !loading && (
-        <p className="mt-4 text-xs text-rose-300/80">Couldn&apos;t extract related tickers.</p>
+        <div className="mt-4">
+          <RetryError
+            title="Couldn't extract related tickers."
+            description="This call is AI-backed — Claude may be busy. Try again."
+            onRetry={() => setReload((n) => n + 1)}
+            loading={loading}
+            compact
+          />
+        </div>
       )}
 
       {!loading && !error && tickers.length === 0 && (

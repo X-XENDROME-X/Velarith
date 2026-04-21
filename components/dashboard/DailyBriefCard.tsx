@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, AlertCircle } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { fetchDailyBrief, type DailyBrief } from "@/lib/api/backend";
+import { RetryError } from "@/components/ui/RetryError";
 
 export function DailyBriefCard() {
   const [brief, setBrief] = useState<DailyBrief | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -23,7 +25,7 @@ export function DailyBriefCard() {
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
-  }, []);
+  }, [reload]);
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/60 via-slate-900/70 to-purple-950/40 p-5 shadow-[0_30px_80px_-50px_rgba(34,211,238,0.4)] sm:p-6">
@@ -56,9 +58,14 @@ export function DailyBriefCard() {
         )}
 
         {error && !loading && (
-          <div className="mt-5 flex items-start gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-200">
-            <AlertCircle className="mt-0.5 size-3.5 shrink-0" />
-            <span>Couldn&apos;t load today&apos;s brief. The backend may be cold-starting.</span>
+          <div className="mt-5">
+            <RetryError
+              title="Couldn't load today's brief."
+              description="The backend may be cold-starting — this can take ~20s on the first hit."
+              onRetry={() => setReload((n) => n + 1)}
+              loading={loading}
+              compact
+            />
           </div>
         )}
 
