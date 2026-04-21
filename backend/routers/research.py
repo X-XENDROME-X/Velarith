@@ -11,9 +11,9 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from typing import Any, Literal, Optional
+from typing import Annotated, Any, Literal, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Path, Query
 from pydantic import BaseModel, Field
 
 from blueprints.analysis import get_score_breakdown
@@ -30,6 +30,20 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["research"])
 
 AnalysisMode = Literal["short", "long"]
+
+# US stock tickers are 1–5 letters; allow `.` for Berkshire-style BRK.B and `-`
+# for preferred/class shares. Reject anything else before it reaches yfinance.
+TICKER_PATTERN = r"^[A-Za-z][A-Za-z0-9.\-]{0,9}$"
+TickerPath = Annotated[
+    str,
+    Path(
+        ...,
+        pattern=TICKER_PATTERN,
+        min_length=1,
+        max_length=10,
+        description="Stock ticker symbol (e.g. AAPL, BRK.B).",
+    ),
+]
 
 # ==============================
 # Response models
@@ -95,7 +109,7 @@ def _parse_ai_json(raw: str) -> dict[str, Any]:
 
 
 @router.get("/technical/{ticker}")
-async def technical(ticker: str) -> dict[str, Any]:
+async def technical(ticker: TickerPath) -> dict[str, Any]:
     """Technical indicators (RSI, EMAs, ADX, Bollinger, S/R) for `ticker`."""
     summary = await asyncio.to_thread(get_technical_summary, ticker.upper())
     _raise_if_error(summary)
@@ -103,7 +117,7 @@ async def technical(ticker: str) -> dict[str, Any]:
 
 
 @router.get("/fundamental/{ticker}")
-async def fundamental(ticker: str) -> dict[str, Any]:
+async def fundamental(ticker: TickerPath) -> dict[str, Any]:
     """Fundamentals + peer context for `ticker`."""
     data = await asyncio.to_thread(get_comprehensive_fundamental_data, ticker.upper())
     _raise_if_error(data)
@@ -111,7 +125,7 @@ async def fundamental(ticker: str) -> dict[str, Any]:
 
 
 @router.get("/sentiment/{ticker}", response_model=NewsSentimentCounts)
-async def sentiment(ticker: str) -> NewsSentimentCounts:
+async def sentiment(ticker: TickerPath) -> NewsSentimentCounts:
     """News sentiment counts for `ticker` (matches frontend `NewsSentiment` type)."""
     data = await get_news_sentiment(ticker.upper())
     if isinstance(data, dict) and "error" in data:
@@ -127,7 +141,7 @@ async def sentiment(ticker: str) -> NewsSentimentCounts:
 
 @router.get("/analysis/score/{ticker}", response_model=ScoreBreakdown)
 async def analysis_score(
-    ticker: str,
+    ticker: TickerPath,
     mode: AnalysisMode = Query("long", description="short or long"),
 ) -> ScoreBreakdown:
     """Composite score breakdown across fundamentals / technical / sentiment / insider."""
@@ -138,10 +152,10 @@ async def analysis_score(
 
 @router.get("/analysis/ai/{ticker}", response_model=AIAnalysis)
 async def analysis_ai(
-    ticker: str,
+    ticker: TickerPath,
     mode: AnalysisMode = Query("long"),
-    age: Optional[str] = Query(None),
-    risk_profile: Optional[str] = Query(None),
+    age: Optional[str] = Query(None, max_length=16, pattern=r"^[A-Za-z0-9\-+ ]{1,16}$"),
+    risk_profile: Optional[str] = Query(None, max_length=32, pattern=r"^[A-Za-z0-9\- ]{1,32}$"),
 ) -> AIAnalysis:
     """AI-authored ticker analysis, routed through Claude primary + Groq fallback."""
     ticker = ticker.upper()
