@@ -1,10 +1,10 @@
-from matplotlib import ticker
-import yfinance as yf
-import pandas as pd
-import numpy as np
-import ta
-from scipy.signal import argrelextrema
 import math
+
+import numpy as np
+import pandas as pd
+import ta
+import yfinance as yf
+from scipy.signal import argrelextrema
 
 def fetch_price_data(ticker, period="6mo", interval="1d"):
     """Fetch OHLCV data safely from Yahoo Finance."""

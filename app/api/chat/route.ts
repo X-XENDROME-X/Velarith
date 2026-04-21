@@ -5,6 +5,10 @@ import { createGroq } from "@ai-sdk/groq";
 import { getMarketContext, formatMarketContextForAI } from "@/lib/api/market-context";
 import { fetchMarket, fetchMarketTake } from "@/lib/api/backend";
 
+// Vercel Hobby default is 10s for Node serverless; streaming Claude responses
+// can legitimately take 20-30s. 30 sits inside the Hobby 60s ceiling.
+export const maxDuration = 30;
+
 // --- Rate limiting (in-memory, per-IP) ---------------------------------------
 // Two-layer limiter: a burst guard (default 3 / 30s) + a sustained window
 // (default 10 / 5min). Good enough for a single-instance serverless deploy;
