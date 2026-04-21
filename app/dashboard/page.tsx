@@ -30,11 +30,6 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-[calc(100vh-6rem)] flex-col items-center justify-center px-4 py-12 text-center">
       <div className="max-w-2xl space-y-6">
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-cyan-300">
-          <Sparkles className="h-3.5 w-3.5" />
-          Today · coming soon
-        </span>
-
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
           Today on
           <span className="gradient-text"> Velarith</span>
