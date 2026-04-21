@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
-    "dev:backend": "cd backend && (test -d env && source env/bin/activate || true) && python app.py",
+    "dev:backend": "cd backend && (test -d env && source env/bin/activate || true) && uvicorn main:app --reload --host 0.0.0.0 --port 10000",
     "dev:all": "concurrently -n web,api -c cyan,magenta \"npm:dev\" \"npm:dev:backend\"",
     "build": "next build",
     "start": "next start",
