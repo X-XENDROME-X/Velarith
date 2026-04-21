@@ -1,72 +1,40 @@
-"use client";
+// Today — real-time Polymarket overview.
+// Reads: /polymarket/movers, /polymarket/trending, /ai/daily-brief + local watchlist.
 
-// M2: fake broker login + mock portfolio UI removed.
-// M5 rebuilds this as "Today" — movers, trending markets, daily AI brief,
-// watchlist snapshot. This is the interim placeholder.
-
-import Link from "next/link";
-import { ArrowRight, Sparkles, TrendingUp, MessageSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-const TEASER_CARDS = [
-  {
-    icon: TrendingUp,
-    title: "Top movers & trending markets",
-    copy: "Real-time Polymarket odds shifts ranked by volume and conviction.",
-  },
-  {
-    icon: Sparkles,
-    title: "Daily AI brief",
-    copy: "A Claude-authored sentiment summary of the day's market action.",
-  },
-  {
-    icon: MessageSquare,
-    title: "Watchlist snapshot",
-    copy: "Quick pulse on the markets and tickers you're tracking locally.",
-  },
-];
+import { MoversRow } from "@/components/dashboard/MoversRow";
+import { TrendingList } from "@/components/dashboard/TrendingList";
+import { DailyBriefCard } from "@/components/dashboard/DailyBriefCard";
+import { WatchlistSnapshot } from "@/components/dashboard/WatchlistSnapshot";
+import { QuickAskBar } from "@/components/dashboard/QuickAskBar";
 
 export default function DashboardPage() {
   return (
-    <div className="flex min-h-[calc(100vh-6rem)] flex-col items-center justify-center px-4 py-12 text-center">
-      <div className="max-w-2xl space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-          Today on
-          <span className="gradient-text"> Velarith</span>
-        </h1>
-
-        <p className="mx-auto max-w-xl text-sm text-muted-foreground sm:text-base">
-          A daily read on what&apos;s moving across Polymarket, paired with the evidence
-          from the tickers people actually trade against those events.
+    <div className="space-y-6 pb-10 sm:space-y-8">
+      <header className="space-y-1.5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-cyan-300/70">
+          Today on Velarith
         </p>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+          What the crowd is betting
+          <span className="gradient-text"> right now</span>
+        </h1>
+        <p className="max-w-2xl text-sm text-muted-foreground">
+          Live Polymarket movers, a Claude-authored brief of the day, and the markets you&apos;re
+          tracking — all in one pane.
+        </p>
+      </header>
 
-        <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-center">
-          <Button asChild size="lg">
-            <Link href="/markets" className="gap-2">
-              Explore markets <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link href="/assistant" className="gap-2">
-              Ask the assistant
-            </Link>
-          </Button>
+      <MoversRow />
+
+      <div className="grid gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <TrendingList />
         </div>
-      </div>
-
-      <div className="mt-14 grid w-full max-w-4xl gap-4 sm:grid-cols-3">
-        {TEASER_CARDS.map(({ icon: Icon, title, copy }) => (
-          <div
-            key={title}
-            className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-left backdrop-blur-sm"
-          >
-            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-              <Icon className="h-4 w-4 text-cyan-300" />
-            </div>
-            <h3 className="mt-4 text-sm font-semibold text-white">{title}</h3>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{copy}</p>
-          </div>
-        ))}
+        <div className="space-y-5">
+          <DailyBriefCard />
+          <WatchlistSnapshot />
+          <QuickAskBar />
+        </div>
       </div>
     </div>
   );

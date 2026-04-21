@@ -1,10 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ChatMessage } from "@/components/ai/ChatMessage";
 import { ChatInput } from "@/components/ai/ChatInput";
 import { SuggestedPrompts } from "@/components/ai/SuggestedPrompts";
-import { Sparkles, AlertCircle, Trash2, Download, Loader2 } from "lucide-react";
+import {
+  Sparkles,
+  AlertCircle,
+  Trash2,
+  Download,
+  Loader2,
+  X,
+} from "lucide-react";
 
 interface Message {
   id: string;
@@ -13,60 +22,75 @@ interface Message {
   timestamp: Date;
 }
 
-export default function AssistantPage() {
+interface ProviderInfo {
+  provider: string;
+  model: string;
+  fallbackUsed: boolean;
+}
+
+function AssistantPageInner() {
+  const searchParams = useSearchParams();
+  const marketSlug = searchParams.get("market");
+  const ticker = searchParams.get("ticker");
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [streamingContent, setStreamingContent] = useState("");
   const [isIncomplete, setIsIncomplete] = useState(false);
+  const [provider, setProvider] = useState<ProviderInfo | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const autofiredRef = useRef(false);
 
   const handleSendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
-
-    // Clear any previous errors
     setError(null);
 
-    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
       content,
       timestamp: new Date(),
     };
-    
-    // Update messages state and get the new array
+
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
-    
     setIsLoading(true);
     setStreamingContent("");
 
-    // Create abort controller for cancellation
     abortControllerRef.current = new AbortController();
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: updatedMessages.map(msg => ({
-            role: msg.role,
-            content: msg.content,
+          messages: updatedMessages.map((m) => ({
+            role: m.role,
+            content: m.content,
           })),
+          marketSlug: marketSlug ?? null,
+          ticker: ticker ?? null,
         }),
         signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `API error: ${response.status}`);
       }
 
-      // Handle streaming response
+      // Capture provider headers for the badge.
+      const prov = response.headers.get("X-AI-Provider");
+      if (prov) {
+        setProvider({
+          provider: prov,
+          model: response.headers.get("X-AI-Model") ?? "",
+          fallbackUsed: response.headers.get("X-AI-Fallback-Used") === "true",
+        });
+      }
+
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let fullContent = "";
@@ -76,71 +100,73 @@ export default function AssistantPage() {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-
           const chunk = decoder.decode(value);
-          const lines = chunk.split("\n");
-
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const data = line.slice(6);
-              if (data === "[DONE]") {
-                // Stream complete
-                break;
+          for (const line of chunk.split("\n")) {
+            if (!line.startsWith("data: ")) continue;
+            const data = line.slice(6);
+            if (data === "[DONE]") break;
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.text) {
+                fullContent += parsed.text;
+                setStreamingContent(fullContent);
               }
-              try {
-                const parsed = JSON.parse(data);
-                if (parsed.text) {
-                  fullContent += parsed.text;
-                  setStreamingContent(fullContent);
-                }
-                // Check if response was incomplete
-                if (parsed.done && parsed.incomplete) {
-                  responseIncomplete = true;
-                }
-              } catch (e) {
-                console.error("Failed to parse chunk:", e);
+              if (parsed.error) throw new Error(parsed.error);
+              if (parsed.done && parsed.incomplete) responseIncomplete = true;
+            } catch (e) {
+              if (e instanceof Error && e.message !== "Unexpected end of JSON input") {
+                throw e;
               }
             }
           }
         }
       }
 
-      // Add complete assistant message
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: fullContent + (responseIncomplete ? "\n\n⚠️ *Response truncated due to length. Ask a follow-up question for more details.*" : ""),
+        content:
+          fullContent +
+          (responseIncomplete
+            ? "\n\n⚠️ *Response truncated — ask a follow-up for more detail.*"
+            : ""),
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
       setStreamingContent("");
-
-      // Show warning if response was incomplete
-      if (responseIncomplete) {
-        setError("Response was truncated due to length. The analysis is complete but may benefit from a follow-up question for additional details.");
-        setTimeout(() => setError(null), 8000); // Auto-dismiss after 8 seconds
-      }
       setIsIncomplete(responseIncomplete);
-
-    } catch (err: any) {
-      if (err.name === "AbortError") {
-        console.log("Request cancelled");
-      } else {
-        console.error("Chat error:", err);
-        setError(err.message || "Failed to get response. Please try again.");
+      if (responseIncomplete) {
+        setError("Response truncated due to length.");
+        setTimeout(() => setError(null), 8000);
       }
+    } catch (err) {
+      const e = err as { name?: string; message?: string };
+      if (e.name === "AbortError") return;
+      console.error("Chat error:", err);
+      setError(e.message || "Failed to get response. Please try again.");
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
   };
 
-  const handlePromptSelect = (prompt: string) => {
+  // Auto-fire an initial prompt once when the page loads with a deeplink.
+  useEffect(() => {
+    if (autofiredRef.current) return;
+    if (messages.length > 0) return;
+    if (!marketSlug && !ticker) return;
+    autofiredRef.current = true;
+    const prompt = marketSlug
+      ? `What do you think about this market? Is it mispriced? Walk me through your take, the evidence, and what would change your mind.`
+      : `Analyze $${ticker?.toUpperCase()} as evidence for any related prediction-market bets. Start with technicals + fundamentals, then connect to markets where this ticker matters.`;
     handleSendMessage(prompt);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marketSlug, ticker]);
+
+  const handlePromptSelect = (prompt: string) => handleSendMessage(prompt);
 
   const handleClearChat = () => {
-    if (confirm("Are you sure you want to clear all messages?")) {
+    if (confirm("Clear all messages?")) {
       setMessages([]);
       setError(null);
       setStreamingContent("");
@@ -155,7 +181,6 @@ export default function AssistantPage() {
         return `[${timestamp}] ${role}:\n${msg.content}\n`;
       })
       .join("\n---\n\n");
-
     const blob = new Blob([chatText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -168,46 +193,29 @@ export default function AssistantPage() {
   };
 
   const handleRegenerateLastResponse = () => {
-    // Find the last user message
-    const lastUserMessageIndex = messages.findLastIndex(
-      (msg) => msg.role === "user"
-    );
-    if (lastUserMessageIndex === -1) return;
-
-    // Remove all messages after the last user message
-    const messagesUpToLastUser = messages.slice(0, lastUserMessageIndex + 1);
-    setMessages(messagesUpToLastUser);
-
-    // Resend the last user message
-    const lastUserMessage = messages[lastUserMessageIndex];
-    handleSendMessage(lastUserMessage.content);
+    const lastUserIdx = messages.findLastIndex((m) => m.role === "user");
+    if (lastUserIdx === -1) return;
+    const trimmed = messages.slice(0, lastUserIdx + 1);
+    setMessages(trimmed);
+    handleSendMessage(messages[lastUserIdx].content);
   };
 
   const handleContinueResponse = () => {
-    // Add continuation prompt
-    const continuePrompt = "Please continue from where you left off and complete your analysis.";
-    handleSendMessage(continuePrompt);
+    handleSendMessage(
+      "Please continue from where you left off and complete your analysis.",
+    );
   };
 
-  // Auto-scroll to bottom
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading, streamingContent]);
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
+    return () => abortControllerRef.current?.abort();
   }, []);
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      {/* Header */}
       <div className="border-b border-white/5 bg-card/70 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -215,59 +223,65 @@ export default function AssistantPage() {
               <Sparkles className="h-5 w-5 text-cyan-300" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold sm:text-2xl">AI Assistant</h1>
+              <h1 className="text-xl font-semibold sm:text-2xl">Assistant</h1>
               <p className="text-sm text-muted-foreground">
-                Your intelligent market analysis companion
+                Prediction-market-first analysis · Claude primary, Groq fallback
               </p>
             </div>
           </div>
-          
-          {/* Action Buttons */}
-          {messages.length > 0 && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleExportChat}
-                className="rounded-lg border border-white/10 bg-card/50 px-3 py-1.5 text-sm text-muted-foreground transition-all hover:border-cyan-500/30 hover:bg-card/80 hover:text-cyan-400"
-                title="Export chat"
-              >
-                <Download className="h-4 w-4" />
-              </button>
-              <button
-                onClick={handleClearChat}
-                className="rounded-lg border border-white/10 bg-card/50 px-3 py-1.5 text-sm text-muted-foreground transition-all hover:border-red-500/30 hover:bg-card/80 hover:text-red-400"
-                title="Clear chat"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          )}
+
+          <div className="flex items-center gap-2">
+            {provider && <ProviderBadge info={provider} />}
+            {messages.length > 0 && (
+              <>
+                <button
+                  onClick={handleExportChat}
+                  className="rounded-lg border border-white/10 bg-card/50 px-3 py-1.5 text-sm text-muted-foreground transition-all hover:border-cyan-500/30 hover:bg-card/80 hover:text-cyan-400"
+                  title="Export chat"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={handleClearChat}
+                  className="rounded-lg border border-white/10 bg-card/50 px-3 py-1.5 text-sm text-muted-foreground transition-all hover:border-red-500/30 hover:bg-card/80 hover:text-red-400"
+                  title="Clear chat"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
+
+        {(marketSlug || ticker) && (
+          <div className="relative mt-3">
+            <ContextPill marketSlug={marketSlug} ticker={ticker} />
+          </div>
+        )}
       </div>
 
-      {/* Chat Area */}
       <div className="relative flex-1 overflow-hidden">
-        {/* Background glow */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,116,144,0.15),_transparent_55%)]" />
         <div className="relative h-full overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto flex h-full w-full max-w-5xl flex-col gap-6">
-            {messages.length === 0 ? (
+            {messages.length === 0 && !isLoading ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8">
-                {/* Welcome Card */}
                 <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-cyan-900/40 via-slate-900/70 to-purple-900/40 p-8 text-center shadow-2xl">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.25),_transparent_60%)]" />
                   <div className="relative space-y-4">
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-500/40 bg-white/5">
                       <Sparkles className="h-8 w-8 text-cyan-300" />
                     </div>
-                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Welcome to Velarith AI</h2>
+                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                      Ask about any market
+                    </h2>
                     <p className="mx-auto max-w-2xl text-base text-muted-foreground/80 sm:text-lg">
-                      Get instant insights, market analysis, and predictions powered by advanced AI. Ask
-                      anything about prediction markets and receive tailored answers in seconds.
+                      Probe mispricings, find evidence in equities and macro, size positions.
+                      Link a market with <code className="rounded bg-white/5 px-1.5 py-0.5 text-sm">?market=slug</code>{" "}
+                      or a ticker with <code className="rounded bg-white/5 px-1.5 py-0.5 text-sm">?ticker=SYM</code>.
                     </p>
                   </div>
                 </div>
-
-                {/* Suggested Prompts */}
                 <SuggestedPrompts
                   className="max-w-4xl"
                   onPromptSelect={handlePromptSelect}
@@ -275,41 +289,39 @@ export default function AssistantPage() {
               </div>
             ) : (
               <div className="flex flex-1 flex-col gap-6">
-                {/* Error Banner */}
                 {error && (
-                  <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-rose-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4">
+                    <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-rose-400" />
                     <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-rose-200 mb-1">Error</h4>
+                      <h4 className="mb-1 text-sm font-semibold text-rose-200">Error</h4>
                       <p className="text-sm text-rose-300/90">{error}</p>
                     </div>
                     <button
                       onClick={() => setError(null)}
-                      className="text-rose-400 hover:text-rose-300 text-sm"
+                      className="text-sm text-rose-400 hover:text-rose-300"
                     >
                       Dismiss
                     </button>
                   </div>
                 )}
 
-                <div className="space-y-6 rounded-3xl border border-white/5 bg-card/70 p-4 sm:p-6 shadow-xl shadow-black/20">
-                  {messages.map((message, index) => (
-                    <ChatMessage 
-                      key={message.id} 
+                <div className="space-y-6 rounded-3xl border border-white/5 bg-card/70 p-4 shadow-xl shadow-black/20 sm:p-6">
+                  {messages.map((message, idx) => (
+                    <ChatMessage
+                      key={message.id}
                       message={message}
                       onRegenerate={
-                        message.role === "assistant" && 
-                        index === messages.length - 1 && 
+                        message.role === "assistant" &&
+                        idx === messages.length - 1 &&
                         !isLoading
                           ? handleRegenerateLastResponse
                           : undefined
                       }
                     />
                   ))}
-                  
-                  {/* Streaming message */}
+
                   {streamingContent && (
-                    <ChatMessage 
+                    <ChatMessage
                       message={{
                         id: "streaming",
                         role: "assistant",
@@ -318,8 +330,7 @@ export default function AssistantPage() {
                       }}
                     />
                   )}
-                  
-                  {/* Loading indicator with enhanced animation */}
+
                   {isLoading && !streamingContent && (
                     <div className="flex items-center gap-4 rounded-2xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 via-teal-500/10 to-cyan-500/10 px-5 py-4">
                       <div className="relative flex h-8 w-8 items-center justify-center">
@@ -328,29 +339,27 @@ export default function AssistantPage() {
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-cyan-200">
-                          Velarith AI is analyzing...
+                          Velarith AI is thinking...
                         </p>
                         <p className="text-xs text-cyan-300/60">
-                          Fetching market data and generating insights
+                          Pulling market data and weighing evidence
                         </p>
                       </div>
                     </div>
                   )}
-                  
-                  {/* Continue button for incomplete responses */}
+
                   {isIncomplete && !isLoading && (
-                    <div className="flex justify-center animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex animate-in fade-in slide-in-from-bottom-2 justify-center duration-300">
                       <button
                         onClick={handleContinueResponse}
-                        className="group flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 via-teal-500/10 to-cyan-500/10 px-6 py-3 text-sm font-medium text-cyan-200 shadow-lg transition-all hover:border-cyan-400/50 hover:from-cyan-500/20 hover:via-teal-500/20 hover:to-cyan-500/20 hover:shadow-cyan-500/25"
+                        className="group flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 via-teal-500/10 to-cyan-500/10 px-6 py-3 text-sm font-medium text-cyan-200 shadow-lg transition-all hover:border-cyan-400/50 hover:from-cyan-500/20 hover:via-teal-500/20 hover:to-cyan-500/20"
                       >
                         <Sparkles className="h-4 w-4 text-cyan-400 group-hover:animate-pulse" />
                         Continue Response
-                        <span className="text-xs text-cyan-400/70">(Response was truncated)</span>
                       </button>
                     </div>
                   )}
-                  
+
                   <div ref={messagesEndRef} />
                 </div>
               </div>
@@ -359,12 +368,93 @@ export default function AssistantPage() {
         </div>
       </div>
 
-      {/* Input Area */}
       <div className="px-4 py-4 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-5xl">
           <ChatInput onSend={handleSendMessage} disabled={isLoading} />
         </div>
       </div>
     </div>
+  );
+}
+
+function ProviderBadge({ info }: { info: ProviderInfo }) {
+  const label =
+    info.provider === "anthropic"
+      ? "Claude"
+      : info.provider === "groq"
+      ? "Groq"
+      : info.provider;
+  return (
+    <span
+      className={
+        "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-semibold " +
+        (info.fallbackUsed
+          ? "border-amber-500/40 bg-amber-500/10 text-amber-200"
+          : "border-cyan-500/40 bg-cyan-500/10 text-cyan-200")
+      }
+      title={info.model}
+    >
+      <Sparkles className="h-3 w-3" />
+      {label}
+      {info.fallbackUsed && " · fallback"}
+    </span>
+  );
+}
+
+function ContextPill({
+  marketSlug,
+  ticker,
+}: {
+  marketSlug: string | null;
+  ticker: string | null;
+}) {
+  if (marketSlug) {
+    return (
+      <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
+        <span className="font-semibold">Market context:</span>
+        <Link
+          href={`/markets/${marketSlug}`}
+          className="underline-offset-2 hover:underline"
+        >
+          {marketSlug}
+        </Link>
+        <Link
+          href="/assistant"
+          className="ml-1 rounded-full p-0.5 text-cyan-300/70 hover:bg-white/10 hover:text-white"
+          title="Clear context"
+        >
+          <X className="h-3 w-3" />
+        </Link>
+      </div>
+    );
+  }
+  if (ticker) {
+    return (
+      <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
+        <span className="font-semibold">Ticker context:</span>
+        <Link
+          href={`/research?ticker=${ticker.toUpperCase()}`}
+          className="underline-offset-2 hover:underline"
+        >
+          ${ticker.toUpperCase()}
+        </Link>
+        <Link
+          href="/assistant"
+          className="ml-1 rounded-full p-0.5 text-cyan-300/70 hover:bg-white/10 hover:text-white"
+          title="Clear context"
+        >
+          <X className="h-3 w-3" />
+        </Link>
+      </div>
+    );
+  }
+  return null;
+}
+
+export default function AssistantPage() {
+  return (
+    <Suspense fallback={<div className="h-full" />}>
+      <AssistantPageInner />
+    </Suspense>
   );
 }
