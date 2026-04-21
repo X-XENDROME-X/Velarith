@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { fetchMovers, type MarketCard as MarketCardData } from "@/lib/api/backend";
 import { MarketCard } from "@/components/markets/MarketCard";
-import { TrendingUp, AlertCircle } from "lucide-react";
+import { TrendingUp } from "lucide-react";
+import { RetryError } from "@/components/ui/RetryError";
 
 export function MoversRow() {
   const [movers, setMovers] = useState<MarketCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -24,7 +26,7 @@ export function MoversRow() {
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
-  }, []);
+  }, [reload]);
 
   return (
     <section>
@@ -49,10 +51,12 @@ export function MoversRow() {
       )}
 
       {error && !loading && (
-        <div className="flex items-start gap-2 rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-xs text-rose-200">
-          <AlertCircle className="mt-0.5 size-3.5 shrink-0" />
-          <span>Couldn&apos;t load movers. Backend may still be waking up.</span>
-        </div>
+        <RetryError
+          title="Couldn't load movers."
+          description="Backend may still be waking up."
+          onRetry={() => setReload((n) => n + 1)}
+          loading={loading}
+        />
       )}
 
       {!loading && !error && (

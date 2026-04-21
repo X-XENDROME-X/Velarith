@@ -3,16 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Flame, AlertCircle } from "lucide-react";
+import { Flame } from "lucide-react";
 import { fetchTrending, type MarketCard as MarketCardData } from "@/lib/api/backend";
 import { CategoryBadge } from "@/components/markets/CategoryBadge";
 import { formatPercent, formatVolume, formatChange } from "@/components/markets/format";
+import { RetryError } from "@/components/ui/RetryError";
 import { cn } from "@/lib/utils";
 
 export function TrendingList() {
   const [markets, setMarkets] = useState<MarketCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -28,7 +30,7 @@ export function TrendingList() {
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
-  }, []);
+  }, [reload]);
 
   return (
     <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
@@ -56,10 +58,13 @@ export function TrendingList() {
       )}
 
       {error && !loading && (
-        <div className="flex items-start gap-2 rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-200">
-          <AlertCircle className="mt-0.5 size-3.5 shrink-0" />
-          <span>Couldn&apos;t load trending markets.</span>
-        </div>
+        <RetryError
+          title="Couldn't load trending markets."
+          description="Backend may still be waking up."
+          onRetry={() => setReload((n) => n + 1)}
+          loading={loading}
+          compact
+        />
       )}
 
       {!loading && !error && (

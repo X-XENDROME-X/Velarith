@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import { Sparkles, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchMarketTake, type MarketTake } from "@/lib/api/backend";
+import { RetryError } from "@/components/ui/RetryError";
 
 interface AITakeSectionProps {
   slug: string;
@@ -15,6 +16,7 @@ export function AITakeSection({ slug }: AITakeSectionProps) {
   const [take, setTake] = useState<MarketTake | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -28,11 +30,13 @@ export function AITakeSection({ slug }: AITakeSectionProps) {
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
-  }, [slug]);
+  }, [slug, reload]);
+
+  const onRetry = () => setReload((n) => n + 1);
 
   return (
     <div className="space-y-4">
-      <AITakeCard take={take} loading={loading} error={error} />
+      <AITakeCard take={take} loading={loading} error={error} onRetry={onRetry} />
       <NeedsPanel
         yesNeeds={take?.yesNeeds ?? []}
         noNeeds={take?.noNeeds ?? []}
@@ -46,9 +50,10 @@ interface AITakeCardProps {
   take: MarketTake | null;
   loading: boolean;
   error: string | null;
+  onRetry: () => void;
 }
 
-function AITakeCard({ take, loading, error }: AITakeCardProps) {
+function AITakeCard({ take, loading, error, onRetry }: AITakeCardProps) {
   return (
     <div className="relative overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/60 via-slate-900/70 to-purple-950/40 p-5 sm:p-6">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.15),_transparent_60%)]" />
@@ -83,9 +88,14 @@ function AITakeCard({ take, loading, error }: AITakeCardProps) {
         )}
 
         {error && !loading && (
-          <div className="mt-5 flex items-start gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-200">
-            <AlertCircle className="mt-0.5 size-3.5 shrink-0" />
-            <span>Couldn&apos;t load the AI take right now.</span>
+          <div className="mt-5">
+            <RetryError
+              title="Couldn't load the AI take."
+              description="Claude takes ~10s cold. The answer is cached for an hour once it lands."
+              onRetry={onRetry}
+              loading={loading}
+              compact
+            />
           </div>
         )}
 

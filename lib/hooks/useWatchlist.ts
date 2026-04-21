@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "@/lib/toast";
 
 // Watchlist state lives in localStorage in v1. v2 swaps this hook's internals
 // for a Supabase query; callers don't change. The shape is intentionally small
@@ -89,6 +90,12 @@ export function useWatchlist() {
         markets: [{ ...market, addedAt: Date.now() }, ...current.markets],
       };
       persist(next);
+      toast({
+        title: "Market added to watchlist",
+        description: market.question,
+        variant: "success",
+        action: { label: "View watchlist", href: "/markets?tab=watchlist" },
+      });
     },
     [persist],
   );
@@ -96,7 +103,11 @@ export function useWatchlist() {
   const removeMarket = useCallback(
     (slug: string) => {
       const current = readStorage();
+      const removed = current.markets.find((m) => m.slug === slug);
       persist({ ...current, markets: current.markets.filter((m) => m.slug !== slug) });
+      if (removed) {
+        toast({ title: "Removed from watchlist", description: removed.question });
+      }
     },
     [persist],
   );
@@ -107,10 +118,17 @@ export function useWatchlist() {
       const exists = current.markets.some((m) => m.slug === market.slug);
       if (exists) {
         persist({ ...current, markets: current.markets.filter((m) => m.slug !== market.slug) });
+        toast({ title: "Removed from watchlist", description: market.question });
       } else {
         persist({
           ...current,
           markets: [{ ...market, addedAt: Date.now() }, ...current.markets],
+        });
+        toast({
+          title: "Market added to watchlist",
+          description: market.question,
+          variant: "success",
+          action: { label: "View watchlist", href: "/markets?tab=watchlist" },
         });
       }
       return !exists;
@@ -133,6 +151,12 @@ export function useWatchlist() {
         ...current,
         tickers: [{ symbol: upper, addedAt: Date.now() }, ...current.tickers],
       });
+      toast({
+        title: `$${upper} added`,
+        description: "Now tracking as evidence for related markets.",
+        variant: "success",
+        action: { label: "Open research", href: `/research?ticker=${upper}` },
+      });
     },
     [persist],
   );
@@ -141,7 +165,9 @@ export function useWatchlist() {
     (symbol: string) => {
       const upper = symbol.trim().toUpperCase();
       const current = readStorage();
+      if (!current.tickers.some((t) => t.symbol === upper)) return;
       persist({ ...current, tickers: current.tickers.filter((t) => t.symbol !== upper) });
+      toast({ title: `$${upper} removed` });
     },
     [persist],
   );
@@ -154,10 +180,17 @@ export function useWatchlist() {
       const exists = current.tickers.some((t) => t.symbol === upper);
       if (exists) {
         persist({ ...current, tickers: current.tickers.filter((t) => t.symbol !== upper) });
+        toast({ title: `$${upper} removed` });
       } else {
         persist({
           ...current,
           tickers: [{ symbol: upper, addedAt: Date.now() }, ...current.tickers],
+        });
+        toast({
+          title: `$${upper} added`,
+          description: "Now tracking as evidence for related markets.",
+          variant: "success",
+          action: { label: "Open research", href: `/research?ticker=${upper}` },
         });
       }
       return !exists;

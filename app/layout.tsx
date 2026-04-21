@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import DynamicHeightManager from "@/components/layout/DynamicHeightManager";
+import { Toaster } from "@/components/ui/Toaster";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://velarith.vercel.app'),
@@ -46,6 +47,7 @@ export default function RootLayout({
       <body>
         <DynamicHeightManager />
         {children}
+        <Toaster />
       </body>
     </html>
   );

@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { fetchMarketHistory, type HistoryInterval } from "@/lib/api/backend";
+import { RetryError } from "@/components/ui/RetryError";
 
 const INTERVALS: { key: HistoryInterval; label: string }[] = [
   { key: "1d", label: "1D" },
@@ -35,6 +36,7 @@ export function OddsHistoryChart({ slug }: OddsHistoryChartProps) {
   const [points, setPoints] = useState<ChartPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -56,7 +58,7 @@ export function OddsHistoryChart({ slug }: OddsHistoryChartProps) {
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
-  }, [slug, interval]);
+  }, [slug, interval, reload]);
 
   const stats = useMemo(() => {
     if (points.length === 0) return null;
@@ -109,8 +111,14 @@ export function OddsHistoryChart({ slug }: OddsHistoryChartProps) {
         {loading ? (
           <div className="size-full animate-pulse rounded-2xl bg-white/5" />
         ) : error ? (
-          <div className="grid size-full place-items-center text-xs text-rose-300/80">
-            {error}
+          <div className="grid size-full place-items-center px-4">
+            <RetryError
+              title="Couldn't load odds history."
+              description="Polymarket CLOB may be slow — try again."
+              onRetry={() => setReload((n) => n + 1)}
+              loading={loading}
+              compact
+            />
           </div>
         ) : points.length === 0 ? (
           <div className="grid size-full place-items-center text-xs text-white/40">
