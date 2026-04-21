@@ -1,8 +1,8 @@
 "use client";
 
 // M2: fake broker login + mock portfolio UI removed.
-// M5 rebuilds this page as "Prediction Pulse" — movers, trending markets,
-// daily AI brief, watchlist snapshot. This is the interim placeholder.
+// M5 rebuilds this as "Today" — movers, trending markets, daily AI brief,
+// watchlist snapshot. This is the interim placeholder.
 
 import Link from "next/link";
 import { ArrowRight, Sparkles, TrendingUp, MessageSquare } from "lucide-react";
@@ -30,19 +30,14 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-[calc(100vh-6rem)] flex-col items-center justify-center px-4 py-12 text-center">
       <div className="max-w-2xl space-y-6">
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-cyan-300">
-          <Sparkles className="h-3.5 w-3.5" />
-          Prediction Pulse · coming soon
-        </span>
-
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-          Your prediction market briefing,
-          <span className="block gradient-text">built from live evidence.</span>
+          Today on
+          <span className="gradient-text"> Velarith</span>
         </h1>
 
         <p className="mx-auto max-w-xl text-sm text-muted-foreground sm:text-base">
-          The dashboard is being rebuilt around Polymarket. For now, dive into market
-          discovery or ask the assistant anything about a ticker or event.
+          A daily read on what&apos;s moving across Polymarket, paired with the evidence
+          from the tickers people actually trade against those events.
         </p>
 
         <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-center">
