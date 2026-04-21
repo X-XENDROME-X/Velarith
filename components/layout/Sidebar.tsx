@@ -10,12 +10,11 @@ import {
   TrendingUp,
   MessageSquare,
   BarChart3,
-  Settings,
-  LogIn,
   X,
   Menu,
 } from "lucide-react";
 
+// M2: /research will replace /analytics in M5; keeping /analytics here until then.
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Markets", href: "/markets", icon: TrendingUp },
@@ -28,8 +27,6 @@ export function Sidebar() {
   const [isHovered, setIsHovered] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const isSettingsActive = pathname?.startsWith("/settings") ?? false;
-  const isLoginActive = pathname?.startsWith("/login") ?? false;
 
   // Detect screen size
   useEffect(() => {
@@ -206,90 +203,7 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Settings & Login */}
-        <div className="border-t border-white/5 px-3 py-4 space-y-2 sidebar-safe-padding-tight">
-          <Link
-            href="/settings"
-            className={cn(
-              "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 relative group min-w-0",
-              isSettingsActive
-                ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/30"
-                : "text-gray-400 hover:text-white hover:bg-white/10",
-              !(isHovered || isMobileOpen || isMobile) && "justify-center"
-            )}
-          >
-            {/* Icon */}
-            <div
-              className={cn(
-                "relative z-10 flex-shrink-0 transition-all duration-500",
-                isSettingsActive ? "scale-110" : "group-hover:rotate-90 group-hover:scale-110"
-              )}
-            >
-              <Settings className="h-5 w-5 drop-shadow-lg" />
-            </div>
-
-            {/* Label */}
-            {(isHovered || isMobileOpen || isMobile) && (
-              <span className="relative z-10 font-semibold leading-snug">
-                Settings
-              </span>
-            )}
-
-            {/* Active indicator */}
-            {isSettingsActive && (isHovered || isMobileOpen || isMobile) && (
-              <div className="ml-auto relative z-10 flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm animate-pulse" />
-                <div className="w-1 h-1 rounded-full bg-white/70 animate-pulse delay-150" />
-              </div>
-            )}
-
-            {/* Hover glow */}
-            {!isSettingsActive && (
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-500/0 via-gray-400/10 to-gray-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            )}
-          </Link>
-
-          <Link
-            href="/login"
-            className={cn(
-              "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 relative group min-w-0",
-              isLoginActive
-                ? "bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 text-white shadow-lg shadow-cyan-500/30"
-                : "text-gray-400 hover:text-white hover:bg-white/10",
-              !(isHovered || isMobileOpen || isMobile) && "justify-center"
-            )}
-          >
-            {/* Icon */}
-            <div
-              className={cn(
-                "relative z-10 flex-shrink-0 transition-transform duration-300",
-                isLoginActive ? "scale-110" : "group-hover:scale-110"
-              )}
-            >
-              <LogIn className="h-5 w-5 drop-shadow-lg" />
-            </div>
-
-            {/* Label */}
-            {(isHovered || isMobileOpen || isMobile) && (
-              <span className="relative z-10 font-semibold leading-snug">
-                Log in
-              </span>
-            )}
-
-            {/* Active indicator */}
-            {isLoginActive && (isHovered || isMobileOpen || isMobile) && (
-              <div className="ml-auto relative z-10 flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm animate-pulse" />
-                <div className="w-1 h-1 rounded-full bg-white/70 animate-pulse delay-150" />
-              </div>
-            )}
-
-            {/* Hover glow */}
-            {!isLoginActive && (
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-indigo-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            )}
-          </Link>
-        </div>
+        {/* M2: Settings + Log in removed — auth/settings deferred to v2. */}
       </div>
     </>
   );
