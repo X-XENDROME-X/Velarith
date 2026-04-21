@@ -6,6 +6,7 @@ import { LineChart as LineIcon, Plus, Check } from "lucide-react";
 import { fetchRelatedTickers, type RelatedTicker } from "@/lib/api/backend";
 import { useWatchlist } from "@/lib/hooks/useWatchlist";
 import { RetryError } from "@/components/ui/RetryError";
+import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
 import { cn } from "@/lib/utils";
 
 interface StockQuote {
@@ -22,7 +23,7 @@ interface RelatedTickersPanelProps {
 export function RelatedTickersPanel({ slug }: RelatedTickersPanelProps) {
   const [tickers, setTickers] = useState<RelatedTicker[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [quotes, setQuotes] = useState<Record<string, StockQuote>>({});
   const [reload, setReload] = useState(0);
   const { addTicker, isTickerSaved } = useWatchlist();
@@ -37,7 +38,7 @@ export function RelatedTickersPanel({ slug }: RelatedTickersPanelProps) {
       })
       .catch((e) => {
         if (e?.name === "AbortError") return;
-        setError(e?.message ?? "Failed to load related tickers");
+        setError(e);
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
@@ -74,17 +75,19 @@ export function RelatedTickersPanel({ slug }: RelatedTickersPanelProps) {
 
       {loading && (
         <div className="mt-4 space-y-2">
+          <BackendWakingHint loading={loading} compact />
           {[0, 1, 2].map((i) => (
             <div key={i} className="h-14 animate-pulse rounded-lg bg-white/5" />
           ))}
         </div>
       )}
 
-      {error && !loading && (
+      {!!error && !loading && (
         <div className="mt-4">
           <RetryError
             title="Couldn't extract related tickers."
             description="This call is AI-backed — Claude may be busy. Try again."
+            error={error}
             onRetry={() => setReload((n) => n + 1)}
             loading={loading}
             compact

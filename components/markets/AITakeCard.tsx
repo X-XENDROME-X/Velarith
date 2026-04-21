@@ -5,6 +5,7 @@ import { Sparkles, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchMarketTake, type MarketTake } from "@/lib/api/backend";
 import { RetryError } from "@/components/ui/RetryError";
+import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
 
 interface AITakeSectionProps {
   slug: string;
@@ -15,7 +16,7 @@ interface AITakeSectionProps {
 export function AITakeSection({ slug }: AITakeSectionProps) {
   const [take, setTake] = useState<MarketTake | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [reload, setReload] = useState(0);
 
   useEffect(() => {
@@ -26,7 +27,7 @@ export function AITakeSection({ slug }: AITakeSectionProps) {
       .then(setTake)
       .catch((e) => {
         if (e?.name === "AbortError") return;
-        setError(e?.message ?? "Failed to load AI take");
+        setError(e);
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
@@ -49,7 +50,7 @@ export function AITakeSection({ slug }: AITakeSectionProps) {
 interface AITakeCardProps {
   take: MarketTake | null;
   loading: boolean;
-  error: string | null;
+  error: unknown;
   onRetry: () => void;
 }
 
@@ -79,19 +80,23 @@ function AITakeCard({ take, loading, error, onRetry }: AITakeCardProps) {
         </div>
 
         {loading && (
-          <div className="mt-5 space-y-2">
-            <div className="h-3 w-1/3 animate-pulse rounded bg-white/10" />
-            <div className="h-3 w-full animate-pulse rounded bg-white/5" />
-            <div className="h-3 w-5/6 animate-pulse rounded bg-white/5" />
-            <div className="h-3 w-2/3 animate-pulse rounded bg-white/5" />
+          <div className="mt-5 space-y-3">
+            <BackendWakingHint loading={loading} compact />
+            <div className="space-y-2">
+              <div className="h-3 w-1/3 animate-pulse rounded bg-white/10" />
+              <div className="h-3 w-full animate-pulse rounded bg-white/5" />
+              <div className="h-3 w-5/6 animate-pulse rounded bg-white/5" />
+              <div className="h-3 w-2/3 animate-pulse rounded bg-white/5" />
+            </div>
           </div>
         )}
 
-        {error && !loading && (
+        {!!error && !loading && (
           <div className="mt-5">
             <RetryError
               title="Couldn't load the AI take."
               description="Claude takes ~10s cold. The answer is cached for an hour once it lands."
+              error={error}
               onRetry={onRetry}
               loading={loading}
               compact

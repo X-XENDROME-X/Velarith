@@ -15,7 +15,8 @@
     "lint:fix": "next lint --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "warmup": "bash scripts/warmup.sh"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.71",

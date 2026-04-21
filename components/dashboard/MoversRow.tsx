@@ -5,11 +5,12 @@ import { fetchMovers, type MarketCard as MarketCardData } from "@/lib/api/backen
 import { MarketCard } from "@/components/markets/MarketCard";
 import { TrendingUp } from "lucide-react";
 import { RetryError } from "@/components/ui/RetryError";
+import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
 
 export function MoversRow() {
   const [movers, setMovers] = useState<MarketCardData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [reload, setReload] = useState(0);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export function MoversRow() {
       })
       .catch((e) => {
         if (e?.name === "AbortError") return;
-        setError(e?.message ?? "Failed to load movers");
+        setError(e);
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
@@ -40,20 +41,23 @@ export function MoversRow() {
       </div>
 
       {loading && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-[200px] animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]"
-            />
-          ))}
+        <div className="space-y-3">
+          <BackendWakingHint loading={loading} />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-[200px] animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]"
+              />
+            ))}
+          </div>
         </div>
       )}
 
-      {error && !loading && (
+      {!!error && !loading && (
         <RetryError
           title="Couldn't load movers."
-          description="Backend may still be waking up."
+          error={error}
           onRetry={() => setReload((n) => n + 1)}
           loading={loading}
         />

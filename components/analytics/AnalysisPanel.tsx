@@ -6,6 +6,7 @@ import type { AnalysisFilters, AIAnalysis, TechnicalIndicators, FundamentalMetri
 import { cn } from "@/lib/utils";
 import AIAnalysisView from "./AIAnalysisView";
 import ScoreIndicatorsView from "./ScoreIndicatorsView";
+import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
 
 // Backend URL — env-driven for prod, localhost fallback for dev
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:10000";
@@ -123,9 +124,10 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
 			<div className="flex-1 overflow-y-auto p-3.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 sm:p-4 lg:p-5 xl:p-6">
 				{isLoading ? (
 					<div className="flex h-[350px] items-center justify-center sm:h-[400px]">
-						<div className="flex flex-col items-center gap-3">
+						<div className="flex max-w-sm flex-col items-center gap-3">
 							<Loader2 className="size-7 animate-spin text-white/60 sm:size-8" />
 							<p className="text-xs text-white/60 sm:text-sm">Analyzing {symbol}...</p>
+							<BackendWakingHint loading={isLoading} compact className="mt-1" />
 						</div>
 					</div>
 				) : (

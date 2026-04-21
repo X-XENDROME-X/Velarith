@@ -9,6 +9,7 @@ import { MarketGridSkeleton } from "./MarketGrid";
 import { useWatchlist } from "@/lib/hooks/useWatchlist";
 import { TickerAutocomplete } from "./TickerAutocomplete";
 import { RetryError } from "@/components/ui/RetryError";
+import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
 
 interface StockQuote {
   symbol: string;
@@ -21,7 +22,7 @@ export function WatchlistTab() {
   const { markets: watchMarkets, tickers, hydrated, removeTicker } = useWatchlist();
   const [liveMarkets, setLiveMarkets] = useState<MarketCardData[]>([]);
   const [marketsLoading, setMarketsLoading] = useState(false);
-  const [marketsError, setMarketsError] = useState<string | null>(null);
+  const [marketsError, setMarketsError] = useState<unknown>(null);
   const [quotes, setQuotes] = useState<StockQuote[]>([]);
   const [quotesLoading, setQuotesLoading] = useState(false);
   const [reload, setReload] = useState(0);
@@ -64,12 +65,12 @@ export function WatchlistTab() {
         }
         setLiveMarkets(live);
         if (results.length > 0 && live.length === 0) {
-          setMarketsError("Couldn't refresh any watched markets.");
+          setMarketsError(new Error("Couldn't refresh any watched markets."));
         }
       })
       .catch((e) => {
         if (e?.name === "AbortError") return;
-        setMarketsError(e?.message ?? "Couldn't refresh watched markets.");
+        setMarketsError(e);
       })
       .finally(() => setMarketsLoading(false));
     return () => ctrl.abort();
@@ -119,11 +120,14 @@ export function WatchlistTab() {
             <span className="text-xs text-white/40">{watchMarkets.length}</span>
           </div>
           {marketsLoading && liveMarkets.length === 0 ? (
-            <MarketGridSkeleton count={Math.min(4, watchMarkets.length)} />
+            <div className="space-y-3">
+              <BackendWakingHint loading={marketsLoading} />
+              <MarketGridSkeleton count={Math.min(4, watchMarkets.length)} />
+            </div>
           ) : marketsError && liveMarkets.length === 0 ? (
             <RetryError
               title="Couldn't refresh your watchlist."
-              description="Backend may be cold-starting. Try again."
+              error={marketsError}
               onRetry={() => setReload((n) => n + 1)}
               loading={marketsLoading}
             />
