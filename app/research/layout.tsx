@@ -1,6 +1,6 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 
-export default function AnalyticsLayout({
+export default function ResearchLayout({
 	children,
 }: {
 	children: React.ReactNode;

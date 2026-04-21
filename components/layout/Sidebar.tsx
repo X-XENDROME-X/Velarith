@@ -9,17 +9,17 @@ import {
   LayoutDashboard,
   TrendingUp,
   MessageSquare,
-  BarChart3,
+  FlaskConical,
   X,
   Menu,
 } from "lucide-react";
 
-// M2: /research will replace /analytics in M5; keeping /analytics here until then.
+// M5: /analytics renamed to /research. Markets detail lives at /markets/[slug].
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Markets", href: "/markets", icon: TrendingUp },
-  { name: "AI Assistant", href: "/assistant", icon: MessageSquare },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Research", href: "/research", icon: FlaskConical },
+  { name: "Assistant", href: "/assistant", icon: MessageSquare },
 ];
 
 export function Sidebar() {
@@ -147,7 +147,9 @@ export function Sidebar() {
         {/* Navigation */}
         <nav className="flex-1 px-3 pt-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent sidebar-safe-padding">
           {navigation.map((item, index) => {
-            const isActive = pathname === item.href;
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
             const showLabel = isHovered || isMobileOpen || isMobile;
             
             return (
