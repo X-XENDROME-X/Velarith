@@ -11,6 +11,7 @@ import {
 import { CategoryChips } from "./CategoryChips";
 import { MarketGrid, MarketGridSkeleton } from "./MarketGrid";
 import { RetryError } from "@/components/ui/RetryError";
+import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
 
 type SortKey = "volume" | "movers" | "liquidity" | "endingSoon";
 
@@ -29,7 +30,7 @@ export function DiscoverTab({
   const [sort, setSort] = useState<SortKey>("volume");
   const [markets, setMarkets] = useState<MarketCardData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [reload, setReload] = useState(0);
 
   // Debounce search input (300ms).
@@ -52,7 +53,7 @@ export function DiscoverTab({
       .then((r) => setMarkets(r.markets))
       .catch((e) => {
         if (e?.name === "AbortError") return;
-        setError(e?.message ?? "Failed to load markets");
+        setError(e);
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
@@ -108,11 +109,14 @@ export function DiscoverTab({
       <CategoryChips selected={category} onSelect={setCategory} />
 
       {loading ? (
-        <MarketGridSkeleton count={8} />
+        <div className="space-y-3">
+          <BackendWakingHint loading={loading} />
+          <MarketGridSkeleton count={8} />
+        </div>
       ) : error ? (
         <RetryError
           title="Couldn't load markets."
-          description="Backend may still be waking up."
+          error={error}
           onRetry={() => setReload((n) => n + 1)}
           loading={loading}
         />

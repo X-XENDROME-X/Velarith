@@ -8,12 +8,13 @@ import { fetchTrending, type MarketCard as MarketCardData } from "@/lib/api/back
 import { CategoryBadge } from "@/components/markets/CategoryBadge";
 import { formatPercent, formatVolume, formatChange } from "@/components/markets/format";
 import { RetryError } from "@/components/ui/RetryError";
+import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
 import { cn } from "@/lib/utils";
 
 export function TrendingList() {
   const [markets, setMarkets] = useState<MarketCardData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [reload, setReload] = useState(0);
 
   useEffect(() => {
@@ -26,7 +27,7 @@ export function TrendingList() {
       })
       .catch((e) => {
         if (e?.name === "AbortError") return;
-        setError(e?.message ?? "Failed to load trending");
+        setError(e);
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
@@ -51,16 +52,17 @@ export function TrendingList() {
 
       {loading && (
         <div className="space-y-2">
+          <BackendWakingHint loading={loading} compact />
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-14 animate-pulse rounded-lg bg-white/5" />
           ))}
         </div>
       )}
 
-      {error && !loading && (
+      {!!error && !loading && (
         <RetryError
           title="Couldn't load trending markets."
-          description="Backend may still be waking up."
+          error={error}
           onRetry={() => setReload((n) => n + 1)}
           loading={loading}
           compact

@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { fetchDailyBrief, type DailyBrief } from "@/lib/api/backend";
 import { RetryError } from "@/components/ui/RetryError";
+import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
 
 export function DailyBriefCard() {
   const [brief, setBrief] = useState<DailyBrief | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [reload, setReload] = useState(0);
 
   useEffect(() => {
@@ -21,7 +22,7 @@ export function DailyBriefCard() {
       })
       .catch((e) => {
         if (e?.name === "AbortError") return;
-        setError(e?.message ?? "Failed to load brief");
+        setError(e);
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
@@ -49,19 +50,22 @@ export function DailyBriefCard() {
         </div>
 
         {loading && (
-          <div className="mt-5 space-y-2">
-            <div className="h-4 w-2/3 animate-pulse rounded bg-white/10" />
-            <div className="h-3 w-full animate-pulse rounded bg-white/5" />
-            <div className="h-3 w-5/6 animate-pulse rounded bg-white/5" />
-            <div className="h-3 w-3/4 animate-pulse rounded bg-white/5" />
+          <div className="mt-5 space-y-3">
+            <BackendWakingHint loading={loading} compact />
+            <div className="space-y-2">
+              <div className="h-4 w-2/3 animate-pulse rounded bg-white/10" />
+              <div className="h-3 w-full animate-pulse rounded bg-white/5" />
+              <div className="h-3 w-5/6 animate-pulse rounded bg-white/5" />
+              <div className="h-3 w-3/4 animate-pulse rounded bg-white/5" />
+            </div>
           </div>
         )}
 
-        {error && !loading && (
+        {!!error && !loading && (
           <div className="mt-5">
             <RetryError
               title="Couldn't load today's brief."
-              description="The backend may be cold-starting — this can take ~20s on the first hit."
+              error={error}
               onRetry={() => setReload((n) => n + 1)}
               loading={loading}
               compact

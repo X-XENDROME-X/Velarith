@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { fetchMarketHistory, type HistoryInterval } from "@/lib/api/backend";
 import { RetryError } from "@/components/ui/RetryError";
+import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
 
 const INTERVALS: { key: HistoryInterval; label: string }[] = [
   { key: "1d", label: "1D" },
@@ -35,7 +36,7 @@ export function OddsHistoryChart({ slug }: OddsHistoryChartProps) {
   const [interval, setInterval] = useState<HistoryInterval>("1w");
   const [points, setPoints] = useState<ChartPoint[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [reload, setReload] = useState(0);
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export function OddsHistoryChart({ slug }: OddsHistoryChartProps) {
       )
       .catch((e) => {
         if (e?.name === "AbortError") return;
-        setError(e?.message ?? "Failed to load history");
+        setError(e);
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
@@ -109,12 +110,18 @@ export function OddsHistoryChart({ slug }: OddsHistoryChartProps) {
 
       <div className="mt-4 h-[260px]">
         {loading ? (
-          <div className="size-full animate-pulse rounded-2xl bg-white/5" />
+          <div className="relative size-full">
+            <div className="size-full animate-pulse rounded-2xl bg-white/5" />
+            <div className="absolute inset-x-3 bottom-3">
+              <BackendWakingHint loading={loading} compact />
+            </div>
+          </div>
         ) : error ? (
           <div className="grid size-full place-items-center px-4">
             <RetryError
               title="Couldn't load odds history."
               description="Polymarket CLOB may be slow — try again."
+              error={error}
               onRetry={() => setReload((n) => n + 1)}
               loading={loading}
               compact

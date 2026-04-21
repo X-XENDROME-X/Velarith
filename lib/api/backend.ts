@@ -147,6 +147,34 @@ export class BackendError extends Error {
   }
 }
 
+// Cold-start detector — Render's free tier sleeps after 15 min idle and the
+// first request that wakes it hangs or gets a 502/503/504 from the Render
+// proxy before the Python process is ready. AbortError from our own retry
+// also looks like this to the user. The hint / retry UI reads this to swap
+// copy from "Couldn't load data" to "Backend is waking up".
+export function isLikelyColdStart(err: unknown): boolean {
+  if (!err) return false;
+  if (err instanceof BackendError) {
+    return err.status === 502 || err.status === 503 || err.status === 504 || err.status === 0;
+  }
+  if (err instanceof Error) {
+    const name = err.name;
+    if (name === "AbortError" || name === "TimeoutError") return true;
+    const msg = err.message.toLowerCase();
+    if (
+      msg.includes("failed to fetch") ||
+      msg.includes("network") ||
+      msg.includes("fetch failed") ||
+      msg.includes("timeout") ||
+      msg.includes("econnrefused") ||
+      msg.includes("load failed")
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // --- Polymarket endpoints ---
 
 function qs(params: Record<string, string | number | undefined | null>): string {
