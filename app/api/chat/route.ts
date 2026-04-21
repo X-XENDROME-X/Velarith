@@ -6,23 +6,74 @@ import { getMarketContext, formatMarketContextForAI } from "@/lib/api/market-con
 import { fetchMarket, fetchMarketTake } from "@/lib/api/backend";
 
 // --- Rate limiting (in-memory, per-IP) ---------------------------------------
+// Two-layer limiter: a burst guard (default 3 / 30s) + a sustained window
+// (default 10 / 5min). Good enough for a single-instance serverless deploy;
+// upgrade to Upstash / Vercel KV for multi-region durability in v2.
 
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT_WINDOW = 5 * 60 * 1000;
-const RATE_LIMIT_MAX = 10;
+const RL_WINDOW_MS = Number(process.env.CHAT_RATE_LIMIT_WINDOW_SEC || 300) * 1000;
+const RL_MAX = Number(process.env.CHAT_RATE_LIMIT_MAX || 10);
+const RL_BURST_WINDOW_MS = Number(process.env.CHAT_RATE_LIMIT_BURST_WINDOW_SEC || 30) * 1000;
+const RL_BURST_MAX = Number(process.env.CHAT_RATE_LIMIT_BURST_MAX || 3);
 
-function checkRateLimit(id: string) {
+interface Bucket {
+  count: number;
+  resetTime: number;
+  burstCount: number;
+  burstResetTime: number;
+}
+
+const rateLimitMap = new Map<string, Bucket>();
+
+function sweepExpired(now: number) {
+  if (rateLimitMap.size <= 1024) return;
+  for (const [k, v] of rateLimitMap) {
+    if (v.resetTime < now && v.burstResetTime < now) rateLimitMap.delete(k);
+  }
+}
+
+function getClientIp(req: NextRequest): string {
+  const fwd = req.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0]!.trim() || "unknown";
+  return req.headers.get("x-real-ip") || "unknown";
+}
+
+interface RateResult {
+  allowed: boolean;
+  remaining: number;
+  resetTime: number;
+  retryAfterSec: number;
+}
+
+function checkRateLimit(id: string): RateResult {
   const now = Date.now();
-  const cur = rateLimitMap.get(id);
-  if (!cur || now > cur.resetTime) {
-    rateLimitMap.set(id, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return { allowed: true, remaining: RATE_LIMIT_MAX - 1, resetTime: now + RATE_LIMIT_WINDOW };
+  sweepExpired(now);
+  let b = rateLimitMap.get(id);
+  if (!b) {
+    b = { count: 0, resetTime: now + RL_WINDOW_MS, burstCount: 0, burstResetTime: now + RL_BURST_WINDOW_MS };
+    rateLimitMap.set(id, b);
   }
-  if (cur.count >= RATE_LIMIT_MAX) {
-    return { allowed: false, remaining: 0, resetTime: cur.resetTime };
+  if (now > b.resetTime) {
+    b.count = 0;
+    b.resetTime = now + RL_WINDOW_MS;
   }
-  cur.count += 1;
-  return { allowed: true, remaining: RATE_LIMIT_MAX - cur.count, resetTime: cur.resetTime };
+  if (now > b.burstResetTime) {
+    b.burstCount = 0;
+    b.burstResetTime = now + RL_BURST_WINDOW_MS;
+  }
+  if (b.burstCount >= RL_BURST_MAX) {
+    return { allowed: false, remaining: 0, resetTime: b.burstResetTime, retryAfterSec: Math.max(1, Math.ceil((b.burstResetTime - now) / 1000)) };
+  }
+  if (b.count >= RL_MAX) {
+    return { allowed: false, remaining: 0, resetTime: b.resetTime, retryAfterSec: Math.max(1, Math.ceil((b.resetTime - now) / 1000)) };
+  }
+  b.count += 1;
+  b.burstCount += 1;
+  return {
+    allowed: true,
+    remaining: Math.max(0, RL_MAX - b.count),
+    resetTime: b.resetTime,
+    retryAfterSec: 0,
+  };
 }
 
 // --- System prompt — prediction-market first --------------------------------
@@ -126,20 +177,22 @@ async function fetchMarketContextBlock(marketSlug: string): Promise<string | nul
 
 export async function POST(req: NextRequest) {
   try {
-    const ip =
-      req.headers.get("x-forwarded-for") ||
-      req.headers.get("x-real-ip") ||
-      "unknown";
+    const ip = getClientIp(req);
     const rl = checkRateLimit(ip);
     if (!rl.allowed) {
-      const resetIn = Math.ceil((rl.resetTime - Date.now()) / 1000 / 60);
+      const human =
+        rl.retryAfterSec >= 60
+          ? `${Math.ceil(rl.retryAfterSec / 60)} minute${rl.retryAfterSec >= 120 ? "s" : ""}`
+          : `${rl.retryAfterSec} second${rl.retryAfterSec === 1 ? "" : "s"}`;
       return NextResponse.json(
-        { error: `Rate limit exceeded. Try again in ${resetIn} minutes.` },
+        { error: `Rate limit exceeded. Try again in ${human}.` },
         {
           status: 429,
           headers: {
+            "Retry-After": String(rl.retryAfterSec),
+            "X-RateLimit-Limit": String(RL_MAX),
             "X-RateLimit-Remaining": "0",
-            "X-RateLimit-Reset": String(rl.resetTime),
+            "X-RateLimit-Reset": String(Math.floor(rl.resetTime / 1000)),
           },
         },
       );
@@ -166,6 +219,23 @@ export async function POST(req: NextRequest) {
         { error: "messages array is required" },
         { status: 400 },
       );
+    }
+    if (messages.length > 50) {
+      return NextResponse.json({ error: "too many messages" }, { status: 400 });
+    }
+    for (const m of messages) {
+      if (!m || (m.role !== "user" && m.role !== "assistant")) {
+        return NextResponse.json({ error: "invalid message role" }, { status: 400 });
+      }
+      if (typeof m.content !== "string" || m.content.length > 8000) {
+        return NextResponse.json({ error: "invalid message content" }, { status: 400 });
+      }
+    }
+    if (marketSlug && !/^[a-z0-9][a-z0-9-]{1,199}$/.test(marketSlug)) {
+      return NextResponse.json({ error: "invalid marketSlug" }, { status: 400 });
+    }
+    if (ticker && !/^[A-Za-z][A-Za-z0-9.-]{0,9}$/.test(ticker)) {
+      return NextResponse.json({ error: "invalid ticker" }, { status: 400 });
     }
 
     // Trim context to last 10 messages.
@@ -241,8 +311,9 @@ export async function POST(req: NextRequest) {
         "X-AI-Provider": resolved.provider,
         "X-AI-Model": resolved.modelId,
         "X-AI-Fallback-Used": String(resolved.fallbackUsed),
+        "X-RateLimit-Limit": String(RL_MAX),
         "X-RateLimit-Remaining": String(rl.remaining),
-        "X-RateLimit-Reset": String(rl.resetTime),
+        "X-RateLimit-Reset": String(Math.floor(rl.resetTime / 1000)),
       },
     });
   } catch (err) {
@@ -253,13 +324,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// The chat route is served from the same Vercel origin as the frontend, so no
+// cross-origin preflight is expected. Respond 204 with no CORS headers to
+// avoid accidentally opening the endpoint to third-party sites.
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
+  return new NextResponse(null, { status: 204 });
 }

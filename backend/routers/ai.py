@@ -9,9 +9,9 @@ stays uniform. Results are TTL-cached per slug (1h) and globally (6h for brief).
 from __future__ import annotations
 
 import logging
-from typing import Literal, Optional
+from typing import Annotated, Literal, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel, Field
 
 from services.ai_provider import generate as ai_generate
@@ -20,6 +20,12 @@ from services.ai_takes import daily_brief as svc_daily_brief, market_take as svc
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/ai", tags=["ai"])
+
+SLUG_PATTERN = r"^[a-z0-9][a-z0-9-]{1,199}$"
+SlugPath = Annotated[
+    str,
+    Path(..., pattern=SLUG_PATTERN, min_length=2, max_length=200),
+]
 
 
 # ==============================
@@ -54,7 +60,7 @@ class DailyBrief(BaseModel):
 
 
 @router.get("/market-take/{slug}", response_model=MarketTake)
-async def market_take(slug: str) -> MarketTake:
+async def market_take(slug: SlugPath) -> MarketTake:
     """AI 'is this mispriced?' take. Cached 1h per slug (AI_MARKET_TAKE_TTL_SEC)."""
     try:
         payload = await svc_market_take(slug)

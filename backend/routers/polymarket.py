@@ -8,9 +8,9 @@ Route shapes match the contract the frontend codes against (see .agents/pages.md
 from __future__ import annotations
 
 import logging
-from typing import Literal, Optional
+from typing import Annotated, Literal, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Path, Query
 from pydantic import BaseModel, Field
 
 from services import polymarket as pm
@@ -22,6 +22,21 @@ router = APIRouter(prefix="/polymarket", tags=["polymarket"])
 
 Category = Literal["politics", "crypto", "sports", "tech", "culture", "economics", "other"]
 HistoryInterval = Literal["1h", "6h", "1d", "1w", "1m", "all", "max"]
+
+# Polymarket slugs are kebab-case lowercase alphanumerics. Keep the pattern
+# loose enough to cover long titles but tight enough to reject junk / path
+# traversal attempts before they hit the upstream API.
+SLUG_PATTERN = r"^[a-z0-9][a-z0-9-]{1,199}$"
+SlugPath = Annotated[
+    str,
+    Path(
+        ...,
+        pattern=SLUG_PATTERN,
+        min_length=2,
+        max_length=200,
+        description="Polymarket market slug (kebab-case).",
+    ),
+]
 
 
 # ==============================
@@ -146,7 +161,11 @@ async def categories() -> CategoriesResponse:
 
 @router.get("/search", response_model=MarketListResponse)
 async def search(
-    q: str = Query("", description="Free-text match against the question"),
+    q: str = Query(
+        "",
+        description="Free-text match against the question",
+        max_length=200,
+    ),
     category: Optional[Category] = Query(None),
     limit: int = Query(20, ge=1, le=100),
 ) -> MarketListResponse:
@@ -158,7 +177,7 @@ async def search(
 
 
 @router.get("/market/{slug}", response_model=MarketDetail)
-async def market(slug: str) -> MarketDetail:
+async def market(slug: SlugPath) -> MarketDetail:
     try:
         detail = await pm.get_market(slug)
     except Exception as e:
@@ -168,7 +187,7 @@ async def market(slug: str) -> MarketDetail:
 
 @router.get("/market/{slug}/history", response_model=MarketHistoryResponse)
 async def market_history(
-    slug: str,
+    slug: SlugPath,
     interval: HistoryInterval = Query("1w"),
 ) -> MarketHistoryResponse:
     try:
@@ -183,7 +202,7 @@ async def market_history(
 
 
 @router.get("/market/{slug}/related-tickers", response_model=RelatedTickersResponse)
-async def market_related_tickers(slug: str) -> RelatedTickersResponse:
+async def market_related_tickers(slug: SlugPath) -> RelatedTickersResponse:
     try:
         payload = await ai_related_tickers(slug)
     except Exception as e:
