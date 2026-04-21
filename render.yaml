@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: velarith-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      # Secrets — set via Render dashboard (Environment tab), never commit.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: FINNHUB_API_KEY
+        sync: false
+      # AI routing knobs (see .agents/api-keys.md).
+      - key: AI_PRIMARY_PROVIDER
+        value: claude
+      - key: AI_FALLBACK_PROVIDER
+        value: groq
+      - key: AI_PRIMARY_MODEL
+        value: claude-sonnet-4-5-20250929
+      - key: AI_FALLBACK_MODEL
+        value: llama-3.3-70b-versatile
+      # CORS — comma-separated allowlist. Set your real Vercel origin
+      # (e.g. https://velarith.vercel.app) before first deploy.
+      - key: ALLOWED_ORIGINS
+        sync: false
+      # Optional regex for Vercel preview deploys, e.g.
+      # ^https://velarith-[a-z0-9-]+-<user>\.vercel\.app$
+      - key: ALLOWED_ORIGIN_REGEX
+        sync: false
