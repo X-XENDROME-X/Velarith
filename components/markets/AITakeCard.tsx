@@ -145,16 +145,30 @@ function normalizeTake(take: MarketTake | null): MarketTake | null {
 function parseTakeFromSummary(text: string): Partial<MarketTake> | null {
   if (!text) return null;
   const payload = extractJSON(text);
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
-  const v = payload as Record<string, unknown>;
+  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+    const v = payload as Record<string, unknown>;
+    return {
+      mispriced: typeof v.mispriced === "boolean" ? v.mispriced : undefined,
+      direction: typeof v.direction === "string" ? (v.direction.toLowerCase() as MarketTake["direction"]) : undefined,
+      confidence: typeof v.confidence === "number" ? v.confidence : undefined,
+      summary: typeof v.summary === "string" ? v.summary.trim() : undefined,
+      yesNeeds: Array.isArray(v.yesNeeds) ? v.yesNeeds.filter((x): x is string => typeof x === "string") : undefined,
+      noNeeds: Array.isArray(v.noNeeds) ? v.noNeeds.filter((x): x is string => typeof x === "string") : undefined,
+    };
+  }
+
+  // Change start: tolerate malformed JSON (missing commas/fences/noise)
+  const recovered = recoverTakeFields(text);
+  if (!recovered) return null;
   return {
-    mispriced: typeof v.mispriced === "boolean" ? v.mispriced : undefined,
-    direction: typeof v.direction === "string" ? (v.direction.toLowerCase() as MarketTake["direction"]) : undefined,
-    confidence: typeof v.confidence === "number" ? v.confidence : undefined,
-    summary: typeof v.summary === "string" ? v.summary.trim() : undefined,
-    yesNeeds: Array.isArray(v.yesNeeds) ? v.yesNeeds.filter((x): x is string => typeof x === "string") : undefined,
-    noNeeds: Array.isArray(v.noNeeds) ? v.noNeeds.filter((x): x is string => typeof x === "string") : undefined,
+    mispriced: recovered.mispriced,
+    direction: recovered.direction as MarketTake["direction"] | undefined,
+    confidence: recovered.confidence,
+    summary: recovered.summary,
+    yesNeeds: recovered.yesNeeds,
+    noNeeds: recovered.noNeeds,
   };
+  // Change end: tolerate malformed JSON (missing commas/fences/noise)
 }
 
 function extractJSON(text: string): unknown | null {
@@ -176,6 +190,53 @@ function extractJSON(text: string): unknown | null {
     }
     return null;
   }
+}
+
+function recoverTakeFields(text: string): {
+  mispriced?: boolean;
+  direction?: string;
+  confidence?: number;
+  summary?: string;
+  yesNeeds?: string[];
+  noNeeds?: string[];
+} | null {
+  const source = text.trim();
+  const boolMatch = source.match(/"mispriced"\s*:\s*(true|false)/i);
+  const directionMatch = source.match(/"direction"\s*:\s*"([^"]+)"/i);
+  const confidenceMatch = source.match(/"confidence"\s*:\s*([-+]?\d*\.?\d+)/i);
+  const summaryMatch = source.match(
+    /"summary"\s*:\s*"([\s\S]*?)"\s*(?=,?\s*"(?:yesNeeds|noNeeds|confidence|direction|mispriced)"\s*:|\s*}\s*$)/i,
+  );
+  const yesNeedsBlock = source.match(/"yesNeeds"\s*:\s*\[([\s\S]*?)\]/i);
+  const noNeedsBlock = source.match(/"noNeeds"\s*:\s*\[([\s\S]*?)\]/i);
+
+  const yesNeeds = yesNeedsBlock
+    ? Array.from(yesNeedsBlock[1].matchAll(/"([^"]+)"/g)).map((m) => m[1].trim()).filter(Boolean)
+    : undefined;
+  const noNeeds = noNeedsBlock
+    ? Array.from(noNeedsBlock[1].matchAll(/"([^"]+)"/g)).map((m) => m[1].trim()).filter(Boolean)
+    : undefined;
+
+  const recovered = {
+    mispriced: boolMatch ? boolMatch[1].toLowerCase() === "true" : undefined,
+    direction: directionMatch?.[1]?.toLowerCase(),
+    confidence: confidenceMatch ? Number(confidenceMatch[1]) : undefined,
+    summary: summaryMatch?.[1]?.replace(/\\"/g, '"').trim(),
+    yesNeeds,
+    noNeeds,
+  };
+
+  if (
+    recovered.mispriced === undefined &&
+    recovered.direction === undefined &&
+    recovered.confidence === undefined &&
+    !recovered.summary &&
+    (!recovered.yesNeeds || recovered.yesNeeds.length === 0) &&
+    (!recovered.noNeeds || recovered.noNeeds.length === 0)
+  ) {
+    return null;
+  }
+  return recovered;
 }
 
 function VerdictPill({
