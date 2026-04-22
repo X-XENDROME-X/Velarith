@@ -63,5 +63,4 @@ export interface AnalysisFilters {
 	timeframe: string;
 	pennyStock: boolean;
 	age: string;
-	riskProfile: string;
 }

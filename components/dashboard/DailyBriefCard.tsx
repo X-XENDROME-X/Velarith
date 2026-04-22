@@ -6,11 +6,42 @@ import { fetchDailyBrief, type DailyBrief } from "@/lib/api/backend";
 import { RetryError } from "@/components/ui/RetryError";
 import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
 
+function normalizeBrief(brief: DailyBrief | null): DailyBrief | null {
+  if (!brief) return null;
+
+  const rawBody = (brief.body ?? "").trim();
+  if (!rawBody) return brief;
+
+  const parsed = tryParseBriefPayload(rawBody);
+  if (!parsed) return brief;
+
+  return {
+    ...brief,
+    headline: (parsed.headline || brief.headline || "Today on Polymarket").trim(),
+    body: (parsed.body || "").trim() || brief.body,
+  };
+}
+
+function tryParseBriefPayload(text: string): { headline?: string; body?: string } | null {
+  try {
+    const payload = JSON.parse(text);
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
+    const candidate = payload as Record<string, unknown>;
+    return {
+      headline: typeof candidate.headline === "string" ? candidate.headline : undefined,
+      body: typeof candidate.body === "string" ? candidate.body : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function DailyBriefCard() {
   const [brief, setBrief] = useState<DailyBrief | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
   const [reload, setReload] = useState(0);
+  const displayBrief = normalizeBrief(brief);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -40,12 +71,7 @@ export function DailyBriefCard() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300/80">
               Today&apos;s AI brief
             </p>
-            {brief?.provider && (
-              <p className="text-[10px] text-white/40">
-                Powered by {brief.provider}
-                {brief.fallbackUsed ? " (fallback)" : ""}
-              </p>
-            )}
+            {/* Provider badge intentionally hidden for cleaner product presentation. */}
           </div>
         </div>
 
@@ -73,13 +99,13 @@ export function DailyBriefCard() {
           </div>
         )}
 
-        {!loading && !error && brief && (
+        {!loading && !error && displayBrief && (
           <div className="mt-5 space-y-3">
             <h3 className="text-lg font-semibold leading-snug text-white sm:text-xl">
-              {brief.headline}
+              {displayBrief.headline}
             </h3>
             <p className="text-sm leading-relaxed text-white/70 whitespace-pre-line">
-              {brief.body}
+              {displayBrief.body}
             </p>
           </div>
         )}

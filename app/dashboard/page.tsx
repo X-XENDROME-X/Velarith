@@ -19,8 +19,8 @@ export default function DashboardPage() {
           <span className="gradient-text"> right now</span>
         </h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Live Polymarket movers, a Claude-authored brief of the day, and the markets you&apos;re
-          tracking — all in one pane.
+          Live prediction market movers, a Velarith Assistant brief of the day, and the markets you&apos;re
+          tracking all in one pane.
         </p>
       </header>
 

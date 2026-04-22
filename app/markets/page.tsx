@@ -52,7 +52,7 @@ function MarketsContent() {
         </p>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
           Browse every live
-          <span className="gradient-text"> Polymarket</span>
+          <span className="gradient-text"> prediction market</span>
         </h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
           Filter by category, sort by volume or movers, and track the ones worth following.
