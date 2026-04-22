@@ -233,16 +233,14 @@ function AssistantPageInner() {
     <div className="flex h-full flex-col overflow-hidden">
       <div className="border-b border-white/5 bg-card/70 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-cyan-500/40 bg-gradient-to-br from-cyan-500/20 via-teal-500/20 to-purple-500/20 p-2">
-              <Sparkles className="h-5 w-5 text-cyan-300" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold sm:text-2xl">Assistant</h1>
-              <p className="text-sm text-muted-foreground">
-                Prediction-market-first analysis and evidence-backed reasoning
-              </p>
-            </div>
+          <div className="space-y-0.5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300/70">
+              Assistant
+            </p>
+            <h1 className="text-xl font-semibold sm:text-2xl">Velarith Assistant</h1>
+            <p className="text-sm text-muted-foreground">
+              Ask market questions with focused, evidence-backed context.
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -288,12 +286,12 @@ function AssistantPageInner() {
                       <Sparkles className="h-8 w-8 text-cyan-300" />
                     </div>
                     <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                      Ask about any market
+                      Ask market questions with Velarith Assistant
                     </h2>
                     <p className="mx-auto max-w-2xl text-base text-muted-foreground/80 sm:text-lg">
-                      Probe mispricings, find evidence in equities and macro, size positions.
-                      Link a market with <code className="rounded bg-white/5 px-1.5 py-0.5 text-sm">?market=slug</code>{" "}
-                      or a ticker with <code className="rounded bg-white/5 px-1.5 py-0.5 text-sm">?ticker=SYM</code>.
+                      Explore prediction markets with context from equities and macro signals.
+                      Open this page with <code className="rounded bg-white/5 px-1.5 py-0.5 text-sm">?market=slug</code>{" "}
+                      or <code className="rounded bg-white/5 px-1.5 py-0.5 text-sm">?ticker=SYM</code> to start with focused context.
                     </p>
                   </div>
                 </div>

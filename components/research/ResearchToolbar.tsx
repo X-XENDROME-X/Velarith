@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Star, MessageSquare, LineChart as LineIcon } from "lucide-react";
+import { Star, LineChart as LineIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWatchlist } from "@/lib/hooks/useWatchlist";
 
@@ -42,12 +42,6 @@ export function ResearchToolbar({ symbol }: ResearchToolbarProps) {
         className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:border-cyan-500/40 hover:text-cyan-200"
       >
         <LineIcon className="size-3.5" /> Find related markets
-      </Link>
-      <Link
-        href={`/assistant?ticker=${encodeURIComponent(symbol)}`}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-gradient-to-r from-cyan-500/10 to-teal-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition hover:border-cyan-400/60 hover:from-cyan-500/20 hover:to-teal-500/20"
-      >
-        <MessageSquare className="size-3.5" /> Ask Claude
       </Link>
     </div>
   );

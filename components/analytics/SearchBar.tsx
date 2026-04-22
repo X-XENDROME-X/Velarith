@@ -79,7 +79,7 @@ const SearchBar = ({ onAnalyze, isAnalyzing }: SearchBarProps) => {
 			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
 				<div className="relative flex-1">
 					<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 sm:pl-4 lg:pl-5">
-						<Search className="size-4 text-white/40 sm:size-4.5 lg:size-5" />
+						<Search className="size-4 text-cyan-200/70 sm:size-[18px] lg:size-5" />
 					</div>
 					<input
 						type="text"
@@ -87,11 +87,11 @@ const SearchBar = ({ onAnalyze, isAnalyzing }: SearchBarProps) => {
 						onChange={(e) => setQuery(e.target.value)}
 						onKeyDown={handleKeyDown}
 						placeholder="Enter ticker or company name..."
-						className="w-full rounded-[18px] border border-white/10 bg-white/5 py-2.5 pl-10 pr-3.5 text-sm text-white placeholder-white/40 backdrop-blur-sm transition focus:border-white/30 focus:bg-white/10 focus:outline-none sm:rounded-[20px] sm:py-3 sm:pl-11 sm:pr-4 sm:text-[15px] lg:rounded-[24px] lg:py-4 lg:pl-12 lg:pr-5 lg:text-base"
+						className="w-full rounded-[18px] border border-white/12 bg-white/[0.035] py-2.5 pl-10 pr-3.5 text-sm text-white placeholder:text-white/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md transition focus:border-cyan-400/45 focus:bg-white/[0.055] focus:shadow-[0_0_0_3px_rgba(34,211,238,0.12)] focus:outline-none sm:rounded-[20px] sm:py-3 sm:pl-11 sm:pr-4 sm:text-[15px] lg:rounded-[24px] lg:py-4 lg:pl-12 lg:pr-5 lg:text-base"
 					/>
 					{isSearching && (
 						<div className="absolute inset-y-0 right-3.5 flex items-center sm:right-4">
-							<div className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-white/60" />
+							<div className="size-4 animate-spin rounded-full border-2 border-cyan-200/25 border-t-cyan-200/80" />
 						</div>
 					)}
 				</div>
@@ -101,10 +101,10 @@ const SearchBar = ({ onAnalyze, isAnalyzing }: SearchBarProps) => {
 					onClick={handleAnalyzeClick}
 					disabled={!query.trim() || isAnalyzing}
 					className={cn(
-						"rounded-[16px] bg-white px-6 py-2.5 text-sm font-semibold text-slate-950 transition sm:rounded-[18px] sm:px-7 sm:py-3 sm:text-[15px] lg:rounded-[20px] lg:px-8 lg:py-4 lg:text-base",
+						"rounded-[16px] bg-gradient-to-r from-cyan-400 to-teal-400 px-6 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_12px_24px_-12px_rgba(45,212,191,0.6)] transition sm:rounded-[18px] sm:px-7 sm:py-3 sm:text-[15px] lg:rounded-[20px] lg:px-8 lg:py-4 lg:text-base",
 						query.trim() && !isAnalyzing
-							? "hover:bg-white/90 active:scale-95"
-							: "cursor-not-allowed opacity-50",
+							? "hover:from-cyan-300 hover:to-teal-300 hover:shadow-[0_16px_28px_-12px_rgba(45,212,191,0.75)] active:scale-[0.98]"
+							: "cursor-not-allowed opacity-50 shadow-none",
 					)}
 				>
 					{isAnalyzing ? "Analyzing..." : "Analyze"}

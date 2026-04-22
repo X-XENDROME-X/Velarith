@@ -18,6 +18,11 @@ interface AnalysisPanelProps {
 
 type TabType = "ai-summary" | "score-indicators";
 
+function toAnalysisMode(timeframe?: string): "long" | "short" {
+	const normalized = (timeframe ?? "").trim().toLowerCase();
+	return normalized === "short term" || normalized === "short" ? "short" : "long";
+}
+
 const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
 	const [activeTab, setActiveTab] = useState<TabType>("ai-summary");
 	const [isLoading, setIsLoading] = useState(false);
@@ -32,11 +37,11 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
             console.log("Fetching AI Summary...");
             setIsLoading(true);
             setAiAnalysis(null); // Clear old data
+            const mode = toAnalysisMode(filters.timeframe);
 
             const params = new URLSearchParams({
-                mode: filters.timeframe || 'long',
+                mode,
                 age: filters.age || '30-40',
-                risk_profile: filters.riskProfile || 'moderate'
             });
 
             try {
@@ -56,6 +61,7 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
         const fetchScoreAndIndicators = async () => {
             console.log("Fetching Score & Indicators...");
             setIsLoading(true);
+            const mode = toAnalysisMode(filters.timeframe);
             // Clear all other data
             setTechnicals(null);
             setFundamentals(null);
@@ -67,7 +73,7 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
                     fetch(`${API_BASE}/technical/${symbol}`),
                     fetch(`${API_BASE}/fundamental/${symbol}`),
                     fetch(`${API_BASE}/sentiment/${symbol}`),
-                    fetch(`${API_BASE}/analysis/score/${symbol}?mode=${filters.timeframe || 'long'}`),
+                    fetch(`${API_BASE}/analysis/score/${symbol}?mode=${mode}`),
                 ]);
 
                 // Check each result individually

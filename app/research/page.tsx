@@ -19,7 +19,6 @@ function ResearchPageInner() {
 		timeframe: "Long Term",
 		pennyStock: false,
 		age: "",
-		riskProfile: "",
 	});
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -45,14 +44,14 @@ function ResearchPageInner() {
 			<div className="space-y-4 sm:space-y-5 lg:space-y-6">
 				<div className="space-y-1">
 					<p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300/70">
-						Research · ticker evidence
+						Market research
 					</p>
 					<h1 className="text-xl font-bold text-white sm:text-2xl">
-						Use stock signals to inform your bets
+						Use stock signals to sharpen your market view
 					</h1>
 					<p className="text-sm text-white/55">
-						Technicals, fundamentals and sentiment — framed as evidence for prediction-market
-						positions.
+						Technicals, fundamentals, and sentiment presented as supporting evidence for
+						prediction market analysis.
 					</p>
 				</div>
 

@@ -35,9 +35,10 @@ except ImportError as e:  # defensive — keep scoring alive if a sub-dep is mis
     HAS_SENTIMENT = False
 
 
-def _get_historical_trend(_ticker: str, _days: int) -> tuple[float, float]:
+def _get_historical_trend(_ticker: str, days: int) -> tuple[float, float]:
     """Placeholder insider-trend signal. Returns a neutral 50/50 split until a real
     data source is wired in (see known-issues.md: MockSupabase / insider stub)."""
+    _ = days  # reserved for future real lookback logic
     return 0.5, 0.5
 
 

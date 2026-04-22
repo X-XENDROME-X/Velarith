@@ -36,14 +36,7 @@ export function AITakeSection({ slug }: AITakeSectionProps) {
   const onRetry = () => setReload((n) => n + 1);
 
   return (
-    <div className="space-y-4">
-      <AITakeCard take={take} loading={loading} error={error} onRetry={onRetry} />
-      <NeedsPanel
-        yesNeeds={take?.yesNeeds ?? []}
-        noNeeds={take?.noNeeds ?? []}
-        loading={loading}
-      />
-    </div>
+    <AITakeCard take={take} loading={loading} error={error} onRetry={onRetry} />
   );
 }
 
@@ -55,6 +48,8 @@ interface AITakeCardProps {
 }
 
 function AITakeCard({ take, loading, error, onRetry }: AITakeCardProps) {
+  const displayTake = normalizeTake(take);
+
   return (
     <div className="relative overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/60 via-slate-900/70 to-purple-950/40 p-5 sm:p-6">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.15),_transparent_60%)]" />
@@ -67,15 +62,9 @@ function AITakeCard({ take, loading, error, onRetry }: AITakeCardProps) {
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300/80">
               AI take · Is this mispriced?
             </p>
-            {take?.provider && (
-              <p className="text-[10px] text-white/40">
-                Powered by {take.provider}
-                {take.fallbackUsed ? " (fallback)" : ""}
-              </p>
-            )}
           </div>
-          {take && !loading && (
-            <VerdictPill mispriced={take.mispriced} direction={take.direction} />
+          {displayTake && !loading && (
+            <VerdictPill mispriced={displayTake.mispriced} direction={displayTake.direction} />
           )}
         </div>
 
@@ -104,22 +93,22 @@ function AITakeCard({ take, loading, error, onRetry }: AITakeCardProps) {
           </div>
         )}
 
-        {take && !loading && !error && (
+        {displayTake && !loading && !error && (
           <>
             <p className="mt-5 whitespace-pre-line text-sm leading-relaxed text-white/80">
-              {take.summary}
+              {displayTake.summary}
             </p>
             <div className="mt-4 flex items-center gap-3">
               <div className="flex-1">
                 <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-teal-400"
-                    style={{ width: `${Math.min(100, take.confidence * 100)}%` }}
+                    style={{ width: `${Math.min(100, displayTake.confidence * 100)}%` }}
                   />
                 </div>
               </div>
               <span className="text-[11px] font-semibold text-cyan-200/90">
-                {(take.confidence * 100).toFixed(0)}% confidence
+                {(displayTake.confidence * 100).toFixed(0)}% confidence
               </span>
             </div>
           </>
@@ -129,6 +118,66 @@ function AITakeCard({ take, loading, error, onRetry }: AITakeCardProps) {
   );
 }
 
+function normalizeTake(take: MarketTake | null): MarketTake | null {
+  if (!take) return null;
+  const parsed = parseTakeFromSummary(take.summary);
+  if (!parsed) return take;
+
+  const direction =
+    parsed.direction === "yes" || parsed.direction === "no" || parsed.direction === "neutral"
+      ? parsed.direction
+      : take.direction;
+
+  return {
+    ...take,
+    mispriced: parsed.mispriced ?? take.mispriced,
+    direction,
+    confidence:
+      typeof parsed.confidence === "number"
+        ? Math.max(0, Math.min(1, parsed.confidence))
+        : take.confidence,
+    summary: parsed.summary || take.summary,
+    yesNeeds: parsed.yesNeeds?.length ? parsed.yesNeeds : take.yesNeeds,
+    noNeeds: parsed.noNeeds?.length ? parsed.noNeeds : take.noNeeds,
+  };
+}
+
+function parseTakeFromSummary(text: string): Partial<MarketTake> | null {
+  if (!text) return null;
+  const payload = extractJSON(text);
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
+  const v = payload as Record<string, unknown>;
+  return {
+    mispriced: typeof v.mispriced === "boolean" ? v.mispriced : undefined,
+    direction: typeof v.direction === "string" ? (v.direction.toLowerCase() as MarketTake["direction"]) : undefined,
+    confidence: typeof v.confidence === "number" ? v.confidence : undefined,
+    summary: typeof v.summary === "string" ? v.summary.trim() : undefined,
+    yesNeeds: Array.isArray(v.yesNeeds) ? v.yesNeeds.filter((x): x is string => typeof x === "string") : undefined,
+    noNeeds: Array.isArray(v.noNeeds) ? v.noNeeds.filter((x): x is string => typeof x === "string") : undefined,
+  };
+}
+
+function extractJSON(text: string): unknown | null {
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  const source = (fenced?.[1] ?? text).trim();
+
+  try {
+    return JSON.parse(source);
+  } catch {
+    // Best effort: parse the first object-looking slice.
+    const start = source.indexOf("{");
+    const end = source.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(source.slice(start, end + 1));
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+}
+
 function VerdictPill({
   mispriced,
   direction,
@@ -136,11 +185,19 @@ function VerdictPill({
   mispriced: boolean;
   direction: "yes" | "no" | "neutral";
 }) {
-  if (!mispriced) {
+  if (!mispriced && direction === "neutral") {
     return (
       <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/70">
         <CheckCircle2 className="size-3" />
         Fair
+      </span>
+    );
+  }
+  if (!mispriced) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/70">
+        <CheckCircle2 className="size-3" />
+        Lean {direction.toUpperCase()}
       </span>
     );
   }
@@ -158,68 +215,5 @@ function VerdictPill({
       <XCircle className="size-3" />
       Mispriced · lean {direction.toUpperCase()}
     </span>
-  );
-}
-
-function NeedsPanel({
-  yesNeeds,
-  noNeeds,
-  loading,
-}: {
-  yesNeeds: string[];
-  noNeeds: string[];
-  loading: boolean;
-}) {
-  if (loading) {
-    return (
-      <div className="grid gap-3 sm:grid-cols-2">
-        {[0, 1].map((i) => (
-          <div
-            key={i}
-            className="h-40 animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]"
-          />
-        ))}
-      </div>
-    );
-  }
-  return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      <NeedsColumn title="For YES to hit" accent="emerald" items={yesNeeds} />
-      <NeedsColumn title="For NO to hit" accent="rose" items={noNeeds} />
-    </div>
-  );
-}
-
-function NeedsColumn({
-  title,
-  accent,
-  items,
-}: {
-  title: string;
-  accent: "emerald" | "rose";
-  items: string[];
-}) {
-  const border = accent === "emerald" ? "border-emerald-500/20" : "border-rose-500/20";
-  const text = accent === "emerald" ? "text-emerald-200" : "text-rose-200";
-  const dot = accent === "emerald" ? "bg-emerald-400" : "bg-rose-400";
-
-  return (
-    <div className={cn("rounded-2xl border bg-white/[0.02] p-4", border)}>
-      <p className={cn("text-[11px] font-semibold uppercase tracking-[0.2em]", text)}>
-        {title}
-      </p>
-      {items.length === 0 ? (
-        <p className="mt-3 text-xs text-white/40">No conditions listed.</p>
-      ) : (
-        <ul className="mt-3 space-y-2">
-          {items.map((item, idx) => (
-            <li key={idx} className="flex gap-2 text-sm text-white/75">
-              <span className={cn("mt-2 size-1.5 shrink-0 rounded-full", dot)} />
-              <span className="leading-snug">{item}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
   );
 }
