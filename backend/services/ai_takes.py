@@ -75,7 +75,14 @@ def _parse_ai_json(text: str) -> Optional[Any]:
     try:
         return json.loads(candidate)
     except json.JSONDecodeError:
-        return None
+        # Change start: repair common model JSON mistakes (missing commas between keys).
+        try:
+            repaired = re.sub(r'(["}\]])\s*(?="[^"]+"\s*:)', r"\1, ", candidate)
+            repaired = re.sub(r",\s*([}\]])", r"\1", repaired)
+            return json.loads(repaired)
+        except json.JSONDecodeError:
+            return None
+        # Change end: repair common model JSON mistakes (missing commas between keys).
 
 
 def _extract_bool(text: str, key: str) -> Optional[bool]:
