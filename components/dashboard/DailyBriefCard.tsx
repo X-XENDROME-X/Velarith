@@ -23,8 +23,11 @@ function normalizeBrief(brief: DailyBrief | null): DailyBrief | null {
 }
 
 function tryParseBriefPayload(text: string): { headline?: string; body?: string } | null {
+  // Change start: tolerate malformed JSON payloads from model output
+  const source = text.trim();
+
   try {
-    const payload = JSON.parse(text);
+    const payload = JSON.parse(source);
     if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
     const candidate = payload as Record<string, unknown>;
     return {
@@ -32,8 +35,26 @@ function tryParseBriefPayload(text: string): { headline?: string; body?: string 
       body: typeof candidate.body === "string" ? candidate.body : undefined,
     };
   } catch {
-    return null;
+    const fenced = source.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    const body = fenced?.[1] ?? source;
+    const slicedStart = body.indexOf("{");
+    const slicedEnd = body.lastIndexOf("}");
+    const candidate = slicedStart >= 0 && slicedEnd > slicedStart ? body.slice(slicedStart, slicedEnd + 1) : body;
+
+    const headline = candidate.match(
+      /"headline"\s*:\s*"([\s\S]*?)"\s*(?=,?\s*"body"\s*:|\s*}\s*$)/i,
+    )?.[1];
+    const briefBody = candidate.match(
+      /"body"\s*:\s*"([\s\S]*?)"\s*(?=,?\s*"[a-zA-Z0-9_]+"\s*:|\s*}\s*$)/i,
+    )?.[1];
+
+    if (!headline && !briefBody) return null;
+    return {
+      headline: headline?.replace(/\\"/g, '"').trim(),
+      body: briefBody?.replace(/\\"/g, '"').trim(),
+    };
   }
+  // Change end: tolerate malformed JSON payloads from model output
 }
 
 export function DailyBriefCard() {

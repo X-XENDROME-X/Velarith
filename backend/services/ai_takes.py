@@ -96,15 +96,17 @@ def _extract_number(text: str, key: str) -> Optional[float]:
 
 
 def _extract_string(text: str, key: str) -> Optional[str]:
+    # Change start: tolerate missing commas between JSON keys from LLM output.
     # Handles multiline values reasonably well even when model output isn't strict JSON.
     m = re.search(
-        rf'"{re.escape(key)}"\s*:\s*"([\s\S]*?)"\s*(?:,\s*"|}}\s*$)',
+        rf'"{re.escape(key)}"\s*:\s*"((?:\\.|[^"\\])*)"\s*(?=,?\s*"[A-Za-z0-9_]+"\s*:|\s*}}\s*$)',
         text,
         flags=re.IGNORECASE,
     )
     if not m:
         return None
     return m.group(1).strip().replace('\\"', '"')
+    # Change end: tolerate missing commas between JSON keys from LLM output.
 
 
 def _extract_string_list(text: str, key: str) -> list[str]:
