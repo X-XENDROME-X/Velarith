@@ -214,9 +214,16 @@ function recoverTakeFields(text: string): {
   const boolMatch = source.match(/"mispriced"\s*:\s*(true|false)/i);
   const directionMatch = source.match(/"direction"\s*:\s*"([^"]+)"/i);
   const confidenceMatch = source.match(/"confidence"\s*:\s*([-+]?\d*\.?\d+)/i);
+  // Quoted summary (valid-ish JSON) — prefer when present
   const summaryMatch = source.match(
-    /"summary"\s*:\s*"([\s\S]*?)"\s*(?=,?\s*"(?:yesNeeds|noNeeds|confidence|direction|mispriced)"\s*:|\s*}\s*$)/i,
+    /"summary"\s*:\s*"((?:\\.|[^"\\])*)"\s*(?=,?\s*"(?:yesNeeds|noNeeds)"\s*:|,?\s*}\s*$)/i,
   );
+  // Unquoted summary (common LLM mistake) — text runs until the next key
+  // Change start: support unquoted summary so UI never shows raw JSON
+  const summaryUnquoted = source.match(
+    /"summary"\s*:\s*([\s\S]+?)(?="yesNeeds"\s*:\s*)/i,
+  );
+  // Change end: support unquoted summary so UI never shows raw JSON
   const yesNeedsBlock = source.match(/"yesNeeds"\s*:\s*\[([\s\S]*?)\]/i);
   const noNeedsBlock = source.match(/"noNeeds"\s*:\s*\[([\s\S]*?)\]/i);
 
@@ -231,7 +238,10 @@ function recoverTakeFields(text: string): {
     mispriced: boolMatch ? boolMatch[1].toLowerCase() === "true" : undefined,
     direction: directionMatch?.[1]?.toLowerCase(),
     confidence: confidenceMatch ? Number(confidenceMatch[1]) : undefined,
-    summary: summaryMatch?.[1]?.replace(/\\"/g, '"').trim(),
+    summary: (summaryMatch?.[1] ?? summaryUnquoted?.[1])
+      ?.replace(/\\"/g, '"')
+      .replace(/^[\s,]+|[\s,]+$/g, "")
+      .trim(),
     yesNeeds,
     noNeeds,
   };

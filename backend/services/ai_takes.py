@@ -103,17 +103,52 @@ def _extract_number(text: str, key: str) -> Optional[float]:
 
 
 def _extract_string(text: str, key: str) -> Optional[str]:
-    # Change start: tolerate missing commas between JSON keys from LLM output.
-    # Handles multiline values reasonably well even when model output isn't strict JSON.
+    # Change start: string fields that may be quoted, unquoted, or run until next "key":
     m = re.search(
-        rf'"{re.escape(key)}"\s*:\s*"((?:\\.|[^"\\])*)"\s*(?=,?\s*"[A-Za-z0-9_]+"\s*:|\s*}}\s*$)',
+        rf'"{re.escape(key)}"\s*:\s*"((?:\\.|[^"\\])*)"',
+        text,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if m:
+        return m.group(1).strip().replace('\\"', '"')
+
+    # Unquoted value ending at the next JSON key: "otherKey":
+    m2 = re.search(
+        rf'"{re.escape(key)}"\s*:\s*([\s\S]+?)(?=\s*"([A-Za-z0-9_]+)"\s*:\s*)',
         text,
         flags=re.IGNORECASE,
     )
-    if not m:
-        return None
-    return m.group(1).strip().replace('\\"', '"')
-    # Change end: tolerate missing commas between JSON keys from LLM output.
+    if m2:
+        return m2.group(1).strip().rstrip(",")
+
+    # Last field in object: "key": value }
+    m3 = re.search(
+        rf'"{re.escape(key)}"\s*:\s*([\s\S]+?)\s*}}\s*$',
+        text,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if m3:
+        return m3.group(1).strip().rstrip(",")
+    return None
+    # Change end: string fields that may be quoted, unquoted, or run until next "key":
+
+
+def _extract_direction_value(text: str) -> Optional[str]:
+    m = re.search(
+        r'"direction"\s*:\s*"(yes|no|neutral)"',
+        text,
+        flags=re.IGNORECASE,
+    )
+    if m:
+        return m.group(1).lower()
+    m2 = re.search(
+        r'"direction"\s*:\s*(yes|no|neutral)(?=[\s,}\n\r])',
+        text,
+        flags=re.IGNORECASE,
+    )
+    if m2:
+        return m2.group(1).lower()
+    return None
 
 
 def _extract_string_list(text: str, key: str) -> list[str]:
@@ -124,10 +159,10 @@ def _extract_string_list(text: str, key: str) -> list[str]:
 
 
 def _recover_market_take(text: str) -> dict[str, Any]:
-    direction = _extract_string(text, "direction")
+    direction = _extract_direction_value(text)
     return {
         "mispriced": _extract_bool(text, "mispriced"),
-        "direction": direction.lower() if direction else None,
+        "direction": direction,
         "confidence": _extract_number(text, "confidence"),
         "summary": _extract_string(text, "summary"),
         "yesNeeds": _extract_string_list(text, "yesNeeds"),
