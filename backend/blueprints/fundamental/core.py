@@ -1,4 +1,3 @@
-from flask import Blueprint, request, jsonify
 import yfinance as yf
 import pandas as pd
 from functools import lru_cache
