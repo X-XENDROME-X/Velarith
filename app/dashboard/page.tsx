@@ -15,8 +15,7 @@ export default function DashboardPage() {
           Today on Velarith
         </p>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-          What the crowd is betting
-          <span className="gradient-text"> right now</span>
+          Where market sentiment stands right now
         </h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
           Live prediction market movers, a Velarith Assistant brief of the day, and the markets you&apos;re

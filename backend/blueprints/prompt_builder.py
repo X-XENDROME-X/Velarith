@@ -5,11 +5,12 @@ Builds a detailed prompt for the Claude AI, using
 the exact data keys from our analysis pipelines.
 """
 
-def build_prompt(ticker: str, mode: str, final_scores: dict, fundamentals: dict = None, tech_summary: dict = None, user_context: dict = None, peer_data: dict = None):    
+def build_prompt(ticker: str, mode: str, final_scores: dict, fundamentals: dict = None, tech_summary: dict = None, user_context: dict = None, peer_data: dict = None):
+    # Change start: align prompt keys with current analysis payloads
     # --- 1. User Context ---
     # Build a profile from the form data
     user_section = ""
-    if user_context and user_context.get('risk'):
+    if user_context and user_context.get("risk"):
         user_section = f"""
         User Context:
         • Investor Age: {user_context.get('age', 'N/A')}
@@ -23,11 +24,12 @@ def build_prompt(ticker: str, mode: str, final_scores: dict, fundamentals: dict 
         tech_section = f"""
         Technical Indicators for {ticker}:
         • Current Price: ${tech_summary.get('close', 'N/A')}
-        • 52-Week Range: ${tech_summary.get('low52', 'N/A')} - ${tech_summary.get('high52', 'N/A')}
+        • 52-Week Range: ${tech_summary.get('low52Week', 'N/A')} - ${tech_summary.get('high52Week', 'N/A')}
         • Key EMAs: EMA20 (${tech_summary.get('ema20', 'N/A')}), EMA50 (${tech_summary.get('ema50', 'N/A')}), EMA200 (${tech_summary.get('ema200', 'N/A')})
-        • Momentum: {tech_summary.get('momentum', 'N/A')} (based on EMA20/50 cross)
-        • RSI (14): {tech_summary.get('rsi', 'N/A')} (Zone: {tech_summary.get('zone', 'N/A')})
-        • Trend Strength (ADX): {tech_summary.get('adx', 'N/A')} ({tech_summary.get('trend_strength', 'N/A')})
+        • Crossover Signal: {tech_summary.get('crossover', 'N/A')}
+        • RSI (14): {tech_summary.get('rsi', 'N/A')}
+        • Trend Strength (ADX): {tech_summary.get('adx', 'N/A')}
+        • Trend Zone: {tech_summary.get('trendZone', 'N/A')}
         • Bollinger Bands: ${tech_summary.get('bb_low', 'N/A')} - ${tech_summary.get('bb_high', 'N/A')} (Percent: {tech_summary.get('bb_percent', 'N/A')})
         • Support/Resistance: S: ${tech_summary.get('support', 'N/A')}, R: ${tech_summary.get('resistance', 'N/A')}
         """
@@ -90,7 +92,7 @@ Here is all the data for {ticker}. Use it to generate your JSON analysis.
 {user_section}
 
 Final Scores (0-100):
-• Composite Score: {final_scores.get('score', 'N/A')}
+• Composite Score: {final_scores.get('finalScore', 'N/A')}
 • Fundamental Score: {final_scores.get('fundamentals', 'N/A')}
 • Technical Score: {final_scores.get('technical', 'N/A')}
 • Sentiment Score: {final_scores.get('news', 'N/A')}
@@ -100,3 +102,4 @@ Final Scores (0-100):
 {fund_section}
 {peer_section}
 """
+    # Change end: align prompt keys with current analysis payloads

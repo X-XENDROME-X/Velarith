@@ -22,6 +22,7 @@ export function MarketHeader({ detail }: MarketHeaderProps) {
   const { isMarketSaved, toggleMarket } = useWatchlist();
   const saved = isMarketSaved(detail.slug);
   const positive = detail.change24h >= 0;
+  const externalEventSlug = detail.eventSlug || detail.eventTicker || detail.slug;
 
   return (
     <div className="space-y-4">
@@ -132,10 +133,10 @@ export function MarketHeader({ detail }: MarketHeaderProps) {
           href={`/assistant?market=${detail.slug}`}
           className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-500/40 bg-gradient-to-r from-cyan-500/10 to-teal-500/10 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:border-cyan-400/60 hover:from-cyan-500/20 hover:to-teal-500/20"
         >
-          <MessageSquare className="size-4" /> Ask Claude about this
+          <MessageSquare className="size-4" /> Ask assistant about this
         </Link>
         <a
-          href={`https://polymarket.com/event/${detail.slug}`}
+          href={`https://polymarket.com/event/${externalEventSlug}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-white/70 transition hover:border-white/20 hover:text-white"

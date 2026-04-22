@@ -66,6 +66,7 @@ class MarketDetail(MarketCard):
     clobTokenIds: list[str] = Field(default_factory=list)
     eventTitle: Optional[str] = None
     eventTicker: Optional[str] = None
+    eventSlug: Optional[str] = None
     oneHourPriceChange: float = 0.0
     oneWeekPriceChange: float = 0.0
     oneMonthPriceChange: float = 0.0

@@ -78,6 +78,61 @@ def _parse_ai_json(text: str) -> Optional[Any]:
         return None
 
 
+def _extract_bool(text: str, key: str) -> Optional[bool]:
+    m = re.search(rf'"{re.escape(key)}"\s*:\s*(true|false)', text, flags=re.IGNORECASE)
+    if not m:
+        return None
+    return m.group(1).lower() == "true"
+
+
+def _extract_number(text: str, key: str) -> Optional[float]:
+    m = re.search(rf'"{re.escape(key)}"\s*:\s*([-+]?\d*\.?\d+)', text)
+    if not m:
+        return None
+    try:
+        return float(m.group(1))
+    except ValueError:
+        return None
+
+
+def _extract_string(text: str, key: str) -> Optional[str]:
+    # Handles multiline values reasonably well even when model output isn't strict JSON.
+    m = re.search(
+        rf'"{re.escape(key)}"\s*:\s*"([\s\S]*?)"\s*(?:,\s*"|}}\s*$)',
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not m:
+        return None
+    return m.group(1).strip().replace('\\"', '"')
+
+
+def _extract_string_list(text: str, key: str) -> list[str]:
+    block = re.search(rf'"{re.escape(key)}"\s*:\s*\[(.*?)\]', text, flags=re.DOTALL)
+    if not block:
+        return []
+    return [s.strip() for s in re.findall(r'"([^"]+)"', block.group(1)) if s.strip()]
+
+
+def _recover_market_take(text: str) -> dict[str, Any]:
+    direction = _extract_string(text, "direction")
+    return {
+        "mispriced": _extract_bool(text, "mispriced"),
+        "direction": direction.lower() if direction else None,
+        "confidence": _extract_number(text, "confidence"),
+        "summary": _extract_string(text, "summary"),
+        "yesNeeds": _extract_string_list(text, "yesNeeds"),
+        "noNeeds": _extract_string_list(text, "noNeeds"),
+    }
+
+
+def _recover_daily_brief(text: str) -> dict[str, Any]:
+    return {
+        "headline": _extract_string(text, "headline"),
+        "body": _extract_string(text, "body"),
+    }
+
+
 def _now_iso() -> str:
     return dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
 
@@ -153,7 +208,9 @@ async def market_take(slug: str) -> dict[str, Any]:
         max_tokens=900,
         temperature=0.2,
     )
-    parsed = _parse_ai_json(result.text) or {}
+    parsed = _parse_ai_json(result.text)
+    if not isinstance(parsed, dict):
+        parsed = _recover_market_take(result.text)
 
     take = {
         "slug": slug,
@@ -217,10 +274,12 @@ async def daily_brief() -> dict[str, Any]:
         max_tokens=900,
         temperature=0.3,
     )
-    parsed = _parse_ai_json(result.text) or {}
+    parsed = _parse_ai_json(result.text)
+    if not isinstance(parsed, dict):
+        parsed = _recover_daily_brief(result.text)
 
     brief = {
-        "headline": str(parsed.get("headline") or "Today on Polymarket").strip(),
+        "headline": str(parsed.get("headline") or "Today in prediction markets").strip(),
         "body": str(parsed.get("body") or result.text or "").strip(),
         **_meta(result),
     }

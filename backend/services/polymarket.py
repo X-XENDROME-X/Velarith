@@ -262,9 +262,11 @@ def _market_detail(market: dict[str, Any]) -> dict[str, Any]:
     events = market.get("events") or []
     event_title = None
     event_ticker = None
+    event_slug = None
     if isinstance(events, list) and events:
         event_title = events[0].get("title")
         event_ticker = events[0].get("ticker")
+        event_slug = events[0].get("slug")
     return {
         **card,
         "description": market.get("description"),
@@ -275,6 +277,7 @@ def _market_detail(market: dict[str, Any]) -> dict[str, Any]:
         "clobTokenIds": _parse_json_list(market.get("clobTokenIds")),
         "eventTitle": event_title,
         "eventTicker": event_ticker,
+        "eventSlug": event_slug,
         "oneHourPriceChange": _as_float(market.get("oneHourPriceChange")),
         "oneWeekPriceChange": _as_float(market.get("oneWeekPriceChange")),
         "oneMonthPriceChange": _as_float(market.get("oneMonthPriceChange")),

@@ -73,8 +73,8 @@ export function MarketCard({ market, compact = false }: MarketCardProps) {
               <button
                 type="button"
                 onClick={handleAsk}
-                aria-label="Ask Claude about this market"
-                title="Ask Claude about this market"
+                aria-label="Ask assistant about this market"
+                title="Ask assistant about this market"
                 className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-white/50 transition hover:border-cyan-500/40 hover:text-cyan-300"
               >
                 <MessageSquare className="size-3.5" />

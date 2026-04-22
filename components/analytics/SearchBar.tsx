@@ -15,6 +15,7 @@ const SearchBar = ({ onAnalyze, isAnalyzing }: SearchBarProps) => {
 	const [results, setResults] = useState<StockSearchResult[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const [showResults, setShowResults] = useState(false);
+	const [inputError, setInputError] = useState<string | null>(null);
 	const searchRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -58,15 +59,35 @@ const SearchBar = ({ onAnalyze, isAnalyzing }: SearchBarProps) => {
 	const handleSelectStock = (symbol: string) => {
 		setQuery(symbol);
 		setShowResults(false);
+		setInputError(null);
 		onAnalyze(symbol);
 	};
 
+	// Change start: resolve user input to a valid ticker before analysis
 	const handleAnalyzeClick = () => {
-		if (query.trim()) {
-			onAnalyze(query.toUpperCase());
-			setShowResults(false);
+		const trimmed = query.trim();
+		if (!trimmed) return;
+		const tickerPattern = /^[A-Za-z][A-Za-z0-9.\-]{0,9}$/;
+
+		const symbolMatch = results.find((r) => r.symbol.toUpperCase() === trimmed.toUpperCase());
+		const nameMatch = results.find((r) => r.name.toLowerCase() === trimmed.toLowerCase());
+
+		const resolved =
+			symbolMatch?.symbol ??
+			nameMatch?.symbol ??
+			(tickerPattern.test(trimmed) ? trimmed.toUpperCase() : null);
+
+		if (!resolved) {
+			setInputError("Pick a valid ticker from suggestions (e.g. AAPL).");
+			setShowResults(true);
+			return;
 		}
+
+		setInputError(null);
+		onAnalyze(resolved);
+		setShowResults(false);
 	};
+	// Change end: resolve user input to a valid ticker before analysis
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter" && query.trim()) {
@@ -84,7 +105,10 @@ const SearchBar = ({ onAnalyze, isAnalyzing }: SearchBarProps) => {
 					<input
 						type="text"
 						value={query}
-						onChange={(e) => setQuery(e.target.value)}
+						onChange={(e) => {
+							setQuery(e.target.value);
+							if (inputError) setInputError(null);
+						}}
 						onKeyDown={handleKeyDown}
 						placeholder="Enter ticker or company name..."
 						className="w-full rounded-[18px] border border-white/12 bg-white/[0.035] py-2.5 pl-10 pr-3.5 text-sm text-white placeholder:text-white/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md transition focus:border-cyan-400/45 focus:bg-white/[0.055] focus:shadow-[0_0_0_3px_rgba(34,211,238,0.12)] focus:outline-none sm:rounded-[20px] sm:py-3 sm:pl-11 sm:pr-4 sm:text-[15px] lg:rounded-[24px] lg:py-4 lg:pl-12 lg:pr-5 lg:text-base"
@@ -110,6 +134,9 @@ const SearchBar = ({ onAnalyze, isAnalyzing }: SearchBarProps) => {
 					{isAnalyzing ? "Analyzing..." : "Analyze"}
 				</button>
 			</div>
+			{inputError && (
+				<p className="mt-2 text-xs text-rose-300/90">{inputError}</p>
+			)}
 
 			{showResults && results.length > 0 && (
 				<div className="absolute z-50 mt-2 w-full overflow-hidden rounded-[18px] border border-white/10 bg-slate-900/95 shadow-2xl backdrop-blur-md sm:rounded-[20px] lg:rounded-[24px]">
