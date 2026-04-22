@@ -147,11 +147,8 @@ export class BackendError extends Error {
   }
 }
 
-// Cold-start detector — Render's free tier sleeps after 15 min idle and the
-// first request that wakes it hangs or gets a 502/503/504 from the Render
-// proxy before the Python process is ready. AbortError from our own retry
-// also looks like this to the user. The hint / retry UI reads this to swap
-// copy from "Couldn't load data" to "Backend is waking up".
+// Heuristic for slow / transient failures (gateway timeouts, network blips,
+// aborted in-flight requests). UI uses this for gentler copy + retry tone.
 export function isLikelyColdStart(err: unknown): boolean {
   if (!err) return false;
   if (err instanceof BackendError) {

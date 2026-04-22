@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChatMessage } from "@/components/ai/ChatMessage";
 import { ChatInput } from "@/components/ai/ChatInput";
 import { SuggestedPrompts } from "@/components/ai/SuggestedPrompts";
@@ -29,9 +29,11 @@ interface ProviderInfo {
 }
 
 function AssistantPageInner() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const marketSlug = searchParams.get("market");
   const ticker = searchParams.get("ticker");
+  const urlPrompt = searchParams.get("prompt");
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -150,18 +152,31 @@ function AssistantPageInner() {
     }
   };
 
-  // Auto-fire an initial prompt once when the page loads with a deeplink.
+  // Auto-fire once: explicit ?prompt= from the dashboard bar, or ?market= / ?ticker= deeplinks.
   useEffect(() => {
     if (autofiredRef.current) return;
     if (messages.length > 0) return;
+
+    const explicit = urlPrompt?.trim();
+    if (explicit) {
+      autofiredRef.current = true;
+      const next = new URLSearchParams();
+      if (marketSlug) next.set("market", marketSlug);
+      if (ticker) next.set("ticker", ticker);
+      const qs = next.toString();
+      router.replace(qs ? `/assistant?${qs}` : "/assistant", { scroll: false });
+      void handleSendMessage(explicit);
+      return;
+    }
+
     if (!marketSlug && !ticker) return;
     autofiredRef.current = true;
     const prompt = marketSlug
       ? `What do you think about this market? Is it mispriced? Walk me through your take, the evidence, and what would change your mind.`
       : `Analyze $${ticker?.toUpperCase()} as evidence for any related prediction-market bets. Start with technicals + fundamentals, then connect to markets where this ticker matters.`;
-    handleSendMessage(prompt);
+    void handleSendMessage(prompt);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marketSlug, ticker]);
+  }, [marketSlug, ticker, urlPrompt, router]);
 
   const handlePromptSelect = (prompt: string) => handleSendMessage(prompt);
 
@@ -225,7 +240,7 @@ function AssistantPageInner() {
             <div>
               <h1 className="text-xl font-semibold sm:text-2xl">Assistant</h1>
               <p className="text-sm text-muted-foreground">
-                Prediction-market-first analysis · Claude primary, Groq fallback
+                Prediction-market-first analysis and evidence-backed reasoning
               </p>
             </div>
           </div>

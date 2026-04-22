@@ -17,9 +17,7 @@ interface RetryErrorProps {
   error?: unknown;
 }
 
-// Shared error state with a retry button. Used wherever a backend fetch can
-// fail (especially on Render cold starts, where the first request after a
-// sleep can time out ~15–30s).
+// Shared error state with a retry button for backend fetches.
 export function RetryError({
   onRetry,
   title,
@@ -30,14 +28,11 @@ export function RetryError({
   error,
 }: RetryErrorProps) {
   const cold = isLikelyColdStart(error);
-  // Cold-start copy is authoritative — it tells the user something concrete
-  // about what's happening. Per-site `title`/`description` only apply when
-  // the failure is NOT a wake-up (e.g. genuine 500, bad slug, parse error).
   const resolvedTitle = cold
-    ? "Backend is waking up…"
+    ? "Taking a moment…"
     : title ?? "Couldn't load data.";
   const resolvedDesc = cold
-    ? "Free-tier servers sleep after 15 min idle. First load can take up to 30 seconds — try again in a moment."
+    ? "The first response can take a bit longer. Try again in a few seconds."
     : description ?? "Something went wrong fetching this. Try again in a second.";
 
   const tone = cold
