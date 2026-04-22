@@ -182,10 +182,20 @@ function extractJSON(text: string): unknown | null {
     const start = source.indexOf("{");
     const end = source.lastIndexOf("}");
     if (start >= 0 && end > start) {
+      const candidate = source.slice(start, end + 1);
       try {
-        return JSON.parse(source.slice(start, end + 1));
+        return JSON.parse(candidate);
       } catch {
-        return null;
+        // Change start: repair common LLM JSON mistakes (missing comma between keys).
+        try {
+          const repaired = candidate
+            .replace(/(["}\]])\s*(?="[^"]+"\s*:)/g, "$1, ")
+            .replace(/,\s*([}\]])/g, "$1");
+          return JSON.parse(repaired);
+        } catch {
+          return null;
+        }
+        // Change end: repair common LLM JSON mistakes (missing comma between keys).
       }
     }
     return null;
