@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BackendWakingHintProps {
-  // Render parent is currently loading. Hint only appears while this is true.
+  // Parent is currently loading. Hint only appears while this is true.
   loading: boolean;
   // Delay (ms) before showing the hint. Under this, the normal skeleton is
   // enough; no need to tell the user about cold starts on warm cache.
@@ -16,15 +16,13 @@ interface BackendWakingHintProps {
   message?: string;
 }
 
-// Tiny inline hint that appears ONLY if a backend fetch has been in-flight
-// for >delayMs. Prevents scary "nothing is happening" skeletons during
-// Render's ~30s cold start while staying invisible on warm loads.
+// Inline hint after delayMs when a backend fetch is still loading.
 export function BackendWakingHint({
   loading,
   delayMs = 4000,
   className,
   compact = false,
-  message = "Backend is waking up — first load can take up to 30 seconds.",
+  message = "Still loading — thanks for your patience.",
 }: BackendWakingHintProps) {
   const [show, setShow] = useState(false);
 

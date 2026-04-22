@@ -4,12 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MessageSquare, ArrowRight } from "lucide-react";
 
-const SUGGESTIONS = [
-  "What's the market saying about the next Fed meeting?",
-  "Which crypto market looks most mispriced?",
-  "Should I trust the Iran peace deal market?",
-];
-
 export function QuickAskBar() {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
@@ -47,18 +41,6 @@ export function QuickAskBar() {
           Ask <ArrowRight className="size-4" />
         </button>
       </form>
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {SUGGESTIONS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => send(s)}
-            className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-white/60 transition hover:border-white/20 hover:text-white"
-          >
-            {s}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }
