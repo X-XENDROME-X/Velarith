@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import AIAnalysisView from "./AIAnalysisView";
 import ScoreIndicatorsView from "./ScoreIndicatorsView";
 import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
+import { RetryError } from "@/components/ui/RetryError";
 
 // Backend URL — env-driven for prod, localhost fallback for dev
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:10000";
@@ -31,12 +32,16 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
 	const [fundamentals, setFundamentals] = useState<FundamentalMetrics | null>(null);
 	const [sentiment, setSentiment] = useState<NewsSentiment | null>(null);
 	const [score, setScore] = useState<ScoreBreakdown | null>(null);
+	const [panelError, setPanelError] = useState<unknown>(null);
+	const [reload, setReload] = useState(0);
 
+	// Change start: explicit fetch error state + manual retry trigger
 	useEffect(() => {
         const fetchAiSummary = async () => {
             console.log("Fetching AI Summary...");
             setIsLoading(true);
             setAiAnalysis(null); // Clear old data
+            setPanelError(null);
             const mode = toAnalysisMode(filters.timeframe);
 
             const params = new URLSearchParams({
@@ -49,10 +54,11 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
                 if (res.ok) {
                     setAiAnalysis(await res.json());
                 } else {
-                    console.error("Failed to fetch AI summary", await res.json());
+                    setPanelError(new Error(`AI summary request failed (${res.status})`));
                 }
             } catch (error) {
                 console.error("AI fetch error:", error);
+                setPanelError(error);
             }
             setIsLoading(false); // Done loading *this* tab
         };
@@ -61,6 +67,7 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
         const fetchScoreAndIndicators = async () => {
             console.log("Fetching Score & Indicators...");
             setIsLoading(true);
+            setPanelError(null);
             const mode = toAnalysisMode(filters.timeframe);
             // Clear all other data
             setTechnicals(null);
@@ -81,9 +88,17 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
                 if (fundRes.status === 'fulfilled' && fundRes.value.ok) setFundamentals(await fundRes.value.json());
                 if (sentRes.status === 'fulfilled' && sentRes.value.ok) setSentiment(await sentRes.value.json());
                 if (scoreRes.status === 'fulfilled' && scoreRes.value.ok) setScore(await scoreRes.value.json());
+                const failed = [techRes, fundRes, sentRes, scoreRes].every((r) => {
+                    if (r.status === "rejected") return true;
+                    return !r.value.ok;
+                });
+                if (failed) {
+                    setPanelError(new Error("All score/indicator requests failed."));
+                }
 
             } catch (error) {
                 console.error("Score/Indicators fetch error:", error);
+                setPanelError(error);
             }
             setIsLoading(false); // Done loading *this* tab
         };
@@ -96,7 +111,8 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
             }
         }
         // This hook now re-runs when the *active tab* changes
-    }, [symbol, filters, activeTab]);
+    }, [symbol, filters, activeTab, reload]);
+	// Change end: explicit fetch error state + manual retry trigger
 
 	return (
 		<div className="flex flex-col overflow-hidden rounded-[20px] border border-white/10 bg-slate-900/70 shadow-[0_20px_70px_-40px_rgba(0,0,0,0.5)] backdrop-blur-sm sm:rounded-[24px] lg:rounded-[28px]">
@@ -128,6 +144,17 @@ const AnalysisPanel = ({ symbol, filters }: AnalysisPanelProps) => {
 			</div>
 
 			<div className="flex-1 overflow-y-auto p-3.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 sm:p-4 lg:p-5 xl:p-6">
+				{!!panelError && !isLoading && (
+					<div className="mb-4">
+						<RetryError
+							title={activeTab === "ai-summary" ? "Couldn't load AI Summary." : "Couldn't load Score & Indicators."}
+							error={panelError}
+							onRetry={() => setReload((n) => n + 1)}
+							loading={isLoading}
+							compact
+						/>
+					</div>
+				)}
 				{isLoading ? (
 					<div className="flex h-[350px] items-center justify-center sm:h-[400px]">
 						<div className="flex max-w-sm flex-col items-center gap-3">

@@ -42,6 +42,7 @@ export interface MarketDetail extends MarketCard {
   clobTokenIds: string[];
   eventTitle: string | null;
   eventTicker: string | null;
+  eventSlug: string | null;
   oneHourPriceChange: number;
   oneWeekPriceChange: number;
   oneMonthPriceChange: number;

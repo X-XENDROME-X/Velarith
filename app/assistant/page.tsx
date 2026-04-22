@@ -234,10 +234,7 @@ function AssistantPageInner() {
       <div className="border-b border-white/5 bg-card/70 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between gap-4">
           <div className="space-y-0.5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300/70">
-              Assistant
-            </p>
-            <h1 className="text-xl font-semibold sm:text-2xl">Velarith Assistant</h1>
+            <h1 className="gradient-text text-xl font-semibold sm:text-2xl">Velarith Assistant</h1>
             <p className="text-sm text-muted-foreground">
               Ask market questions with focused, evidence-backed context.
             </p>
