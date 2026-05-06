@@ -294,8 +294,8 @@ html.velarith-booting body {
     50% { opacity: 0.5; transform: scale(0.7); }
   }
   @keyframes velarith-shimmer-x {
-    from { background-position: -120px 0; }
-    to { background-position: 240px 0; }
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
   }
   @keyframes velarith-fade-up {
     from { opacity: 0; transform: translateY(14px); }
@@ -425,10 +425,37 @@ html.velarith-booting body {
       transparent 0%,
       rgba(255, 255, 255, 0.35) 50%,
       transparent 100%);
-    background-size: 120px 100%;
   }
   .velarith-status-dot {
     background: #00d4b4;
     box-shadow: 0 0 6px rgba(0, 212, 180, 0.8);
+  }
+
+  /* --- Sizing/typography (clamp-based, can't be expressed as Tailwind classes) */
+  .velarith-logo-wrap {
+    width: clamp(150px, 24vw, 210px);
+    height: clamp(150px, 24vw, 210px);
+  }
+  .velarith-wordmark-spacing {
+    margin-top: clamp(24px, 4vw, 36px);
+  }
+  .velarith-wordmark-h1 {
+    font-size: clamp(28px, 5.5vw, 44px);
+    letter-spacing: 0.24em;
+    padding-left: 0.24em; /* compensate trailing letter-spacing for true centering */
+  }
+  .velarith-progress-section {
+    margin-top: clamp(36px, 6vw, 52px);
+    width: clamp(200px, 32vw, 300px);
+  }
+  .velarith-status-text {
+    font-size: clamp(10px, 1.5vw, 12px);
+    letter-spacing: 0.2em;
+    padding-left: 0.2em;
+  }
+  .velarith-pct-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(0, 212, 180, 0.5);
   }
 }

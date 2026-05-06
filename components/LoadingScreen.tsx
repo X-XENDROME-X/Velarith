@@ -53,13 +53,7 @@ export default function LoadingScreen({
       <div className="pointer-events-none absolute bottom-6 right-6 h-6 w-6 border-b border-r border-[#0099aa]/30" />
 
       <div className="relative flex flex-col items-center">
-        <div
-          className="velarith-anim-logo-in relative flex items-center justify-center"
-          style={{
-            width: 'clamp(150px, 24vw, 210px)',
-            height: 'clamp(150px, 24vw, 210px)',
-          }}
-        >
+        <div className="velarith-logo-wrap velarith-anim-logo-in relative flex items-center justify-center">
           <div className="velarith-arc-outer velarith-anim-spin absolute inset-0 rounded-full" />
           <div className="velarith-arc-inner velarith-anim-spin-slow absolute inset-[10px] rounded-full" />
           <div className="velarith-glow-disc velarith-anim-glow-pulse-fast absolute h-[58%] w-[58%] rounded-full" />
@@ -76,29 +70,13 @@ export default function LoadingScreen({
           </div>
         </div>
 
-        <div
-          className="velarith-anim-fade-up text-center"
-          style={{ marginTop: 'clamp(24px, 4vw, 36px)' }}
-        >
-          <h1
-            className="velarith-wordmark-text font-bold uppercase leading-none"
-            style={{
-              fontSize: 'clamp(28px, 5.5vw, 44px)',
-              letterSpacing: '0.24em',
-              paddingLeft: '0.24em',
-            }}
-          >
+        <div className="velarith-wordmark-spacing velarith-anim-fade-up text-center">
+          <h1 className="velarith-wordmark-h1 velarith-wordmark-text font-bold uppercase leading-none">
             Velarith
           </h1>
         </div>
 
-        <div
-          className="velarith-anim-fade-up-late flex flex-col items-center gap-3"
-          style={{
-            marginTop: 'clamp(36px, 6vw, 52px)',
-            width: 'clamp(200px, 32vw, 300px)',
-          }}
-        >
+        <div className="velarith-progress-section velarith-anim-fade-up-late flex flex-col items-center gap-3">
           <div className="flex items-center gap-2">
             <div
               className={cn(
@@ -110,48 +88,35 @@ export default function LoadingScreen({
             />
             <span
               className={cn(
-                'font-normal uppercase',
+                'velarith-status-text font-normal uppercase',
                 isError ? 'text-red-300/80' : 'text-[#e8eaed]/40',
               )}
-              style={{
-                fontSize: 'clamp(10px, 1.5vw, 12px)',
-                letterSpacing: '0.2em',
-                paddingLeft: '0.2em',
-              }}
             >
               {statusText}
             </span>
           </div>
 
-          <div className="relative h-0.5 w-full overflow-hidden rounded-full bg-white/[0.07]">
-            <div
-              className={cn(
-                'velarith-progress-fill relative h-full rounded-full',
-                isError && 'opacity-50',
-              )}
-              style={{ width: `${clamped}%` }}
-            >
-              {!isError && (
-                <div className="velarith-progress-shimmer velarith-anim-shimmer-x absolute inset-0" />
-              )}
-            </div>
-          </div>
+          {!isError && (
+            <>
+              <div className="relative h-0.5 w-full overflow-hidden rounded-full bg-white/[0.07]">
+                <div
+                  className="velarith-progress-fill relative h-full rounded-full"
+                  style={{ width: `${clamped}%` }}
+                >
+                  <div className="velarith-progress-shimmer velarith-anim-shimmer-x absolute inset-0" />
+                </div>
+              </div>
 
-          <div
-            className="font-medium tabular-nums"
-            style={{
-              fontSize: '10px',
-              letterSpacing: '0.1em',
-              color: isError ? 'rgba(248,113,113,0.6)' : 'rgba(0,212,180,0.5)',
-            }}
-          >
-            {clamped}%
-          </div>
+              <div className="velarith-pct-label font-medium tabular-nums">
+                {clamped}%
+              </div>
+            </>
+          )}
 
           {isError && (
-            <div className="mt-2 flex flex-col items-center gap-3">
+            <div className="mt-1 flex flex-col items-center gap-4">
               {errorMessage && (
-                <p className="max-w-[280px] text-center text-[11px] leading-relaxed text-red-200/70">
+                <p className="max-w-[280px] text-center text-[12px] leading-relaxed text-[#e8eaed]/60">
                   {errorMessage}
                 </p>
               )}
@@ -166,7 +131,7 @@ export default function LoadingScreen({
                     'focus:outline-none focus:ring-2 focus:ring-[#00d4b4]/40',
                   )}
                 >
-                  Retry
+                  Try Again
                 </button>
               )}
             </div>
