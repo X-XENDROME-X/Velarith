@@ -3,7 +3,9 @@
 // from real backend signals (Render free-tier cold-starts in 30–60s, so each
 // check is a single tick the gate can poll, not a final pass/fail).
 
-import { BACKEND_BASE_URL } from './api/backend';
+// Boot probes hit our own /api/boot/* route handlers (see app/api/boot/),
+// which server-side proxy to the FastAPI backend. Same-origin requests slip
+// past extensions and DNS filters that block the Render hostname directly.
 
 export type CheckFailureReason = 'timeout' | 'http' | 'network' | 'aborted';
 
@@ -79,14 +81,14 @@ function classifyError(err: unknown): CheckFailureReason {
 // calls this in a loop with backoff to ride out Render cold-starts. Each call
 // times out at 5s so the gate can keep the percentage advancing.
 export function checkBackendHealth(signal?: AbortSignal): Promise<CheckResult> {
-  return probe(`${BACKEND_BASE_URL}/health`, { timeoutMs: 5000, retries: 1, signal });
+  return probe(`/api/boot/health`, { timeoutMs: 5000, retries: 1, signal });
 }
 
 // Confirms the markets pipeline is end-to-end ready (FastAPI → Polymarket
 // upstream). Server-side TTL-cached for 60s, so this is fast once health
 // passes.
 export function checkMarketsReady(signal?: AbortSignal): Promise<CheckResult> {
-  return probe(`${BACKEND_BASE_URL}/polymarket/categories`, {
+  return probe(`/api/boot/categories`, {
     timeoutMs: 5000,
     retries: 1,
     signal,
@@ -96,7 +98,7 @@ export function checkMarketsReady(signal?: AbortSignal): Promise<CheckResult> {
 // Warms the AI cache. Slowest probe — Claude/Groq round-trip on a cache miss
 // can hit 5–8s. Server-side cached for 30 min after first hit.
 export function checkDailyBrief(signal?: AbortSignal): Promise<CheckResult> {
-  return probe(`${BACKEND_BASE_URL}/ai/daily-brief`, {
+  return probe(`/api/boot/brief`, {
     timeoutMs: 8000,
     retries: 1,
     signal,
