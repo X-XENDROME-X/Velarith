@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
+import BootGate from "@/components/BootGate";
 import DynamicHeightManager from "@/components/layout/DynamicHeightManager";
 import { Toaster } from "@/components/ui/Toaster";
 
@@ -46,7 +47,7 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body>
         <DynamicHeightManager />
-        {children}
+        <BootGate>{children}</BootGate>
         <Toaster />
       </body>
     </html>

@@ -271,6 +271,15 @@
    first load. .velarith-booting is added to <html> by BootGate before paint
    and removed after fade-out so dashboards keep their own background. */
 
+/* Set the loader's dark navy as the document background outside @layer base
+   so it always wins on first paint and the page never flashes white before
+   the React tree mounts. Page-level <main> elements with bg-background
+   override this for the rest of the app. */
+html,
+body {
+  background-color: #08101e;
+}
+
 html.velarith-booting,
 html.velarith-booting body {
   background-color: #08101e;
