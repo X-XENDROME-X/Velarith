@@ -33,7 +33,11 @@ const HEALTH_BACKOFF_MS = [2000, 2000, 3000, 4000, 5000, 6000, 8000, 10000, 1000
 // Percent eases asymptotically toward STAGE_CEIL.connecting while we wait for
 // /health, so the bar always moves but never reaches 60% until health resolves.
 const ASYMPTOTIC_TAU_MS = 12000;
+
+// Status copy escalates over the connecting stage so the user always has
+// fresh reassurance to read while the backend wakes.
 const WAITING_COPY_DELAY_MS = 5000;
+const STILL_WAITING_COPY_DELAY_MS = 30000;
 
 const FADE_OUT_MS = 700;
 const READY_HOLD_MS = 250;
@@ -59,14 +63,18 @@ const STATUS = {
   init: 'Getting things ready',
   preparing: 'Preparing your workspace',
   waiting: 'Just a moment',
+  almostThere: 'Almost there',
   markets: 'Loading markets',
   ai: 'Preparing insights',
   ready: 'Ready',
   error: 'Something went wrong',
+  offline: 'You appear to be offline',
 } as const;
 
-const ERROR_MESSAGE =
+const GENERIC_ERROR_MESSAGE =
   "We couldn't load Velarith right now. Please try again in a moment.";
+const OFFLINE_ERROR_MESSAGE =
+  'Check your internet connection and try again.';
 
 interface BootGateProps {
   children: ReactNode;
@@ -83,6 +91,7 @@ export default function BootGate({
   const [stage, setStage] = useState<LoadingStage>('init');
   const [percent, setPercent] = useState(0);
   const [statusText, setStatusText] = useState<string>(STATUS.init);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [retryToken, setRetryToken] = useState(0);
 
   const runIdRef = useRef(0);
@@ -92,6 +101,7 @@ export default function BootGate({
     setStage('init');
     setPercent(0);
     setStatusText(STATUS.init);
+    setErrorMessage(null);
     setRetryToken((t) => t + 1);
   }, []);
 
@@ -106,6 +116,15 @@ export default function BootGate({
 
     document.documentElement.classList.add(HTML_BOOTING_CLASS);
     setPhase('booting');
+
+    // If the user is starting offline there's no point burning the health
+    // backoff window — surface a tailored message right away.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      setStage('error');
+      setStatusText(STATUS.offline);
+      setErrorMessage(OFFLINE_ERROR_MESSAGE);
+      return;
+    }
 
     const myRunId = ++runIdRef.current;
     const isAlive = () => runIdRef.current === myRunId;
@@ -133,7 +152,9 @@ export default function BootGate({
           (STAGE_CEIL.connecting - STAGE_FLOOR.connecting) *
             (1 - Math.exp(-elapsed / ASYMPTOTIC_TAU_MS));
         setPercent(eased);
-        if (elapsed > WAITING_COPY_DELAY_MS) {
+        if (elapsed > STILL_WAITING_COPY_DELAY_MS) {
+          setStatusText(STATUS.almostThere);
+        } else if (elapsed > WAITING_COPY_DELAY_MS) {
           setStatusText(STATUS.waiting);
         }
         animFrameRef.current = requestAnimationFrame(tick);
@@ -172,6 +193,7 @@ export default function BootGate({
       if (!healthy) {
         setStage('error');
         setStatusText(STATUS.error);
+        setErrorMessage(GENERIC_ERROR_MESSAGE);
         return;
       }
 
@@ -184,6 +206,7 @@ export default function BootGate({
       if (!marketsResult.ok) {
         setStage('error');
         setStatusText(STATUS.error);
+        setErrorMessage(GENERIC_ERROR_MESSAGE);
         return;
       }
       setPercent(STAGE_CEIL.markets);
@@ -240,7 +263,7 @@ export default function BootGate({
           stage={stage}
           percent={percent}
           statusText={statusText}
-          errorMessage={stage === 'error' ? ERROR_MESSAGE : undefined}
+          errorMessage={stage === 'error' ? errorMessage ?? undefined : undefined}
           onRetry={stage === 'error' ? handleRetry : undefined}
           fadingOut={phase === 'fading'}
         />

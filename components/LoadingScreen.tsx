@@ -40,7 +40,7 @@ export default function LoadingScreen({
       className={cn(
         'fixed inset-0 z-[9999] flex flex-col items-center justify-center',
         'bg-[#08101e] text-[#e8eaed] font-sans',
-        'transition-opacity duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]',
+        'transition-opacity duration-700 ease-in-out motion-reduce:transition-none',
         fadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100',
       )}
     >
