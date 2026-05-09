@@ -10,6 +10,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -23,12 +24,26 @@ import {
 
 type Phase = 'pending' | 'booting' | 'fading' | 'ready';
 
+// useLayoutEffect on the client (synchronous, pre-paint), useEffect on the
+// server (no-op during SSR). Lets us flip phase from 'pending' to 'ready' on
+// returning sessions before the browser paints, eliminating the one-frame
+// flash of children-hidden.
+const useIsoLayoutEffect =
+  typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
 const SESSION_KEY = 'velarith_booted';
 const HTML_BOOTING_CLASS = 'velarith-booting';
 
 // Cap the health probe at ~60s of total wall time before surfacing an error.
 // Tuned for Render free-tier cold-starts which usually finish in 30–45s.
 const HEALTH_BACKOFF_MS = [2000, 2000, 3000, 4000, 5000, 6000, 8000, 10000, 10000, 10000];
+
+// "Fast-fail" detection: when the network layer is permanently blocked
+// (browser extension, DNS filter, etc.) every fetch throws in ~1ms instead
+// of timing out. Sitting through the full backoff window in that case is
+// pointless — bail to error after this many consecutive sub-threshold fails.
+const FAST_FAIL_DURATION_MS = 100;
+const FAST_FAIL_STREAK = 3;
 
 // Percent eases asymptotically toward STAGE_CEIL.connecting while we wait for
 // /health, so the bar always moves but never reaches 60% until health resolves.
@@ -68,13 +83,23 @@ const STATUS = {
   ai: 'Preparing insights',
   ready: 'Ready',
   error: 'Something went wrong',
+  connection: 'Connection issue',
+  marketsFailed: "Some data didn't load",
   offline: 'You appear to be offline',
 } as const;
 
 const GENERIC_ERROR_MESSAGE =
   "We couldn't load Velarith right now. Please try again in a moment.";
+const CONNECTION_ERROR_MESSAGE =
+  "We can't reach Velarith. Please check your connection or try again later.";
+const MARKETS_ERROR_MESSAGE =
+  "Some data didn't load. Please try again, or refresh the page if this continues.";
 const OFFLINE_ERROR_MESSAGE =
   'Check your internet connection and try again.';
+
+// Diagnostic prefix for any console output. Easy to grep in production logs
+// without sending data anywhere.
+const LOG_PREFIX = '[velarith-boot]';
 
 interface BootGateProps {
   children: ReactNode;
@@ -87,6 +112,9 @@ export default function BootGate({
   children,
   minDurationMs = 1200,
 }: BootGateProps) {
+  // Initial value is always 'pending' so SSR markup matches first hydration
+  // render. The iso layout effect below upgrades it to 'ready' synchronously
+  // before the browser paints whenever the session has already booted.
   const [phase, setPhase] = useState<Phase>('pending');
   const [stage, setStage] = useState<LoadingStage>('init');
   const [percent, setPercent] = useState(0);
@@ -104,6 +132,27 @@ export default function BootGate({
     setErrorMessage(null);
     setRetryToken((t) => t + 1);
   }, []);
+
+  // Pre-paint check: if this session has already booted, flip to 'ready' so
+  // children become visible in the same commit as hydration. Avoids the
+  // one-frame flash where the user sees an empty dark navy bg before content.
+  useIsoLayoutEffect(() => {
+    if (sessionStorage.getItem(SESSION_KEY) === '1') {
+      setPhase('ready');
+    }
+  }, []);
+
+  // Auto-retry the moment connectivity returns. Only fires while the loader
+  // is showing an error — fresh boots and successful sessions are unaffected.
+  useEffect(() => {
+    if (stage !== 'error') return;
+    const onOnline = () => {
+      console.warn(`${LOG_PREFIX} connection restored, retrying boot`);
+      handleRetry();
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [stage, handleRetry]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -178,6 +227,8 @@ export default function BootGate({
       startConnectingEase();
 
       let healthy = false;
+      let blocked = false;
+      let fastFailStreak = 0;
       for (let i = 0; i < HEALTH_BACKOFF_MS.length; i++) {
         const result = await checkBackendHealth();
         if (!isAlive()) return;
@@ -185,6 +236,33 @@ export default function BootGate({
           healthy = true;
           break;
         }
+
+        console.warn(
+          `${LOG_PREFIX} health attempt ${i} failed: ${result.reason}` +
+            (result.status ? ` (status ${result.status})` : '') +
+            ` in ${result.durationMs.toFixed(0)}ms`,
+        );
+
+        // Detect a permanently-blocked network: every fetch resolves in <100ms
+        // with a network error (browser extension, DNS filter, CORP, etc.).
+        // No point burning the rest of the backoff window — bail to error.
+        if (
+          result.reason === 'network' &&
+          result.durationMs < FAST_FAIL_DURATION_MS
+        ) {
+          fastFailStreak++;
+          if (fastFailStreak >= FAST_FAIL_STREAK) {
+            console.warn(
+              `${LOG_PREFIX} fast-fail streak reached (${fastFailStreak}); ` +
+                `escalating to connection error without burning the backoff window`,
+            );
+            blocked = true;
+            break;
+          }
+        } else {
+          fastFailStreak = 0;
+        }
+
         await sleep(HEALTH_BACKOFF_MS[i]);
         if (!isAlive()) return;
       }
@@ -192,8 +270,13 @@ export default function BootGate({
 
       if (!healthy) {
         setStage('error');
-        setStatusText(STATUS.error);
-        setErrorMessage(GENERIC_ERROR_MESSAGE);
+        if (blocked) {
+          setStatusText(STATUS.connection);
+          setErrorMessage(CONNECTION_ERROR_MESSAGE);
+        } else {
+          setStatusText(STATUS.error);
+          setErrorMessage(GENERIC_ERROR_MESSAGE);
+        }
         return;
       }
 
@@ -204,9 +287,14 @@ export default function BootGate({
       const marketsResult = await checkMarketsReady();
       if (!isAlive()) return;
       if (!marketsResult.ok) {
+        console.warn(
+          `${LOG_PREFIX} markets check failed: ${marketsResult.reason}` +
+            (marketsResult.status ? ` (status ${marketsResult.status})` : '') +
+            ` in ${marketsResult.durationMs.toFixed(0)}ms`,
+        );
         setStage('error');
-        setStatusText(STATUS.error);
-        setErrorMessage(GENERIC_ERROR_MESSAGE);
+        setStatusText(STATUS.marketsFailed);
+        setErrorMessage(MARKETS_ERROR_MESSAGE);
         return;
       }
       setPercent(STAGE_CEIL.markets);
@@ -216,8 +304,15 @@ export default function BootGate({
       setStage('ai');
       setPercent(STAGE_FLOOR.ai);
       setStatusText(STATUS.ai);
-      await checkDailyBrief();
+      const aiResult = await checkDailyBrief();
       if (!isAlive()) return;
+      if (!aiResult.ok) {
+        console.warn(
+          `${LOG_PREFIX} daily-brief check failed (non-blocking): ${aiResult.reason}` +
+            (aiResult.status ? ` (status ${aiResult.status})` : '') +
+            ` in ${aiResult.durationMs.toFixed(0)}ms`,
+        );
+      }
       setPercent(STAGE_CEIL.ai);
 
       // --- ready: respect the minDuration floor before fading out ---
@@ -269,8 +364,9 @@ export default function BootGate({
         />
       )}
       <div
-        aria-hidden={childrenHidden ? true : undefined}
+        aria-hidden={childrenHidden ? 'true' : undefined}
         className={childrenHidden ? 'invisible' : undefined}
+        suppressHydrationWarning
       >
         {children}
       </div>
