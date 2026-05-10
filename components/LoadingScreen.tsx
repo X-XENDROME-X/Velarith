@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +19,10 @@ interface LoadingScreenProps {
   errorMessage?: string;
   onRetry?: () => void;
   fadingOut?: boolean;
+  // Override the progress bar's CSS transition duration for the next width
+  // change. BootGate uses this to fill the tail of the bar smoothly across
+  // the remaining minDuration window — no pause-then-jump at 95%.
+  fillTransitionMs?: number;
 }
 
 export default function LoadingScreen({
@@ -27,6 +32,7 @@ export default function LoadingScreen({
   errorMessage,
   onRetry,
   fadingOut = false,
+  fillTransitionMs,
 }: LoadingScreenProps) {
   const isError = stage === 'error';
   const clamped = Math.max(0, Math.min(100, Math.round(percent)));
@@ -35,7 +41,7 @@ export default function LoadingScreen({
     <div
       role="status"
       aria-live="polite"
-      aria-busy={stage !== 'ready'}
+      aria-busy={stage !== 'ready' ? 'true' : 'false'}
       aria-label="Loading Velarith"
       className={cn(
         'fixed inset-0 z-[9999] flex flex-col items-center justify-center',
@@ -101,7 +107,16 @@ export default function LoadingScreen({
               <div className="relative h-0.5 w-full overflow-hidden rounded-full bg-white/[0.07]">
                 <div
                   className="velarith-progress-fill relative h-full rounded-full"
-                  style={{ width: `${clamped}%` }}
+                  style={
+                    {
+                      // Width is inherently dynamic; the CSS var lets BootGate
+                      // override the fill's transition duration per phase.
+                      width: `${clamped}%`,
+                      ...(fillTransitionMs != null && {
+                        '--velarith-fill-ms': `${fillTransitionMs}ms`,
+                      }),
+                    } as CSSProperties
+                  }
                 >
                   <div className="velarith-progress-shimmer velarith-anim-shimmer-x absolute inset-0" />
                 </div>

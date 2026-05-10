@@ -34,9 +34,21 @@ const useIsoLayoutEffect =
 const SESSION_KEY = 'velarith_booted';
 const HTML_BOOTING_CLASS = 'velarith-booting';
 
-// Cap the health probe at ~60s of total wall time before surfacing an error.
-// Tuned for Render free-tier cold-starts which usually finish in 30–45s.
-const HEALTH_BACKOFF_MS = [2000, 2000, 3000, 4000, 5000, 6000, 8000, 10000, 10000, 10000];
+// Polling schedule for /health, in milliseconds between attempts. Sized so
+// the loader keeps trying for roughly 3 minutes of wall time before giving
+// up — enough headroom for Render's "first cold start of the day" wake-ups
+// (often 90–180s) without forcing the user to hit Retry manually.
+//
+// Each probe also takes ~4s of fetch time on its own (proxy timeout). So
+// total budget ≈ sum(sleeps) + (attempts × ~4s).
+const HEALTH_BACKOFF_MS = [
+  // Quick recheck for warm backend or already-spinning-up state
+  1500, 2000, 3000, 4000, 5000,
+  // Cold-start window: Render typically wakes in 30–60s
+  6000, 8000, 10000, 10000, 10000,
+  // Patient tail: occasional very-cold first-of-day wake-ups
+  12000, 12000, 15000, 15000, 15000,
+];
 
 // "Fast-fail" detection: when the network layer is permanently blocked
 // (browser extension, DNS filter, etc.) every fetch throws in ~1ms instead
@@ -53,6 +65,12 @@ const ASYMPTOTIC_TAU_MS = 12000;
 // fresh reassurance to read while the backend wakes.
 const WAITING_COPY_DELAY_MS = 5000;
 const STILL_WAITING_COPY_DELAY_MS = 30000;
+
+// Tail fill: once /health succeeds, the bar smoothly animates to 100% over
+// `max(MIN_TAIL_FILL_MS, minDurationMs - elapsed)` ms — no pause-then-jump
+// at 95% on warm backends. The minimum keeps the fill animation visible
+// even after a slow cold-start (where minDuration is already exceeded).
+const MIN_TAIL_FILL_MS = 800;
 
 const FADE_OUT_MS = 700;
 const READY_HOLD_MS = 250;
@@ -110,7 +128,7 @@ interface BootGateProps {
 
 export default function BootGate({
   children,
-  minDurationMs = 1200,
+  minDurationMs = 1500,
 }: BootGateProps) {
   // Initial value is always 'pending' so SSR markup matches first hydration
   // render. The iso layout effect below upgrades it to 'ready' synchronously
@@ -118,6 +136,13 @@ export default function BootGate({
   const [phase, setPhase] = useState<Phase>('pending');
   const [stage, setStage] = useState<LoadingStage>('init');
   const [percent, setPercent] = useState(0);
+  // Override for the progress bar's CSS transition duration. Default (undefined)
+  // falls back to the 600ms value set in globals.css. We bump this to the
+  // remaining minDuration window during the tail fill so the bar smoothly
+  // animates to 100% with no visible pause.
+  const [fillTransitionMs, setFillTransitionMs] = useState<number | undefined>(
+    undefined,
+  );
   const [statusText, setStatusText] = useState<string>(STATUS.init);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [retryToken, setRetryToken] = useState(0);
@@ -130,6 +155,7 @@ export default function BootGate({
     setPercent(0);
     setStatusText(STATUS.init);
     setErrorMessage(null);
+    setFillTransitionMs(undefined);
     setRetryToken((t) => t + 1);
   }, []);
 
@@ -263,8 +289,12 @@ export default function BootGate({
           fastFailStreak = 0;
         }
 
-        await sleep(HEALTH_BACKOFF_MS[i]);
-        if (!isAlive()) return;
+        // Skip the sleep on the final attempt — there's no next probe to
+        // wait for, so the wall-clock budget shouldn't include it.
+        if (i < HEALTH_BACKOFF_MS.length - 1) {
+          await sleep(HEALTH_BACKOFF_MS[i]);
+          if (!isAlive()) return;
+        }
       }
       stopRAF();
 
@@ -280,11 +310,29 @@ export default function BootGate({
         return;
       }
 
-      // --- markets: confirm the data pipeline is end-to-end ready ---
+      // --- tail fill: smoothly animate to 100% over the remaining
+      //     minDuration window. Markets and brief probes run in PARALLEL
+      //     during the fill so a cold backend doesn't double the wait. The
+      //     bar's transition duration is computed from the time budget —
+      //     no jump, no pause at 95%. ---
+      const tailStart = performance.now();
+      const elapsedAtTail = tailStart - startedAt;
+      const fillDuration = Math.max(
+        MIN_TAIL_FILL_MS,
+        minDurationMs - elapsedAtTail,
+      );
+
       setStage('markets');
-      setPercent(STAGE_FLOOR.markets);
       setStatusText(STATUS.markets);
-      const marketsResult = await checkMarketsReady();
+      setFillTransitionMs(fillDuration);
+      setPercent(100);
+
+      // Fire both probes immediately. Markets is required (failure → error);
+      // brief is best-effort (failure logs but boot proceeds).
+      const marketsP = checkMarketsReady();
+      const briefP = checkDailyBrief();
+
+      const marketsResult = await marketsP;
       if (!isAlive()) return;
       if (!marketsResult.ok) {
         console.warn(
@@ -297,35 +345,34 @@ export default function BootGate({
         setErrorMessage(MARKETS_ERROR_MESSAGE);
         return;
       }
-      setPercent(STAGE_CEIL.markets);
 
-      // --- ai: warm the daily brief cache. Best-effort — a slow brief
-      //         shouldn't block the dashboard from rendering. ---
+      // Markets done — surface the next status while brief is still in flight.
       setStage('ai');
-      setPercent(STAGE_FLOOR.ai);
       setStatusText(STATUS.ai);
-      const aiResult = await checkDailyBrief();
+
+      const briefResult = await briefP;
       if (!isAlive()) return;
-      if (!aiResult.ok) {
+      if (!briefResult.ok) {
         console.warn(
-          `${LOG_PREFIX} daily-brief check failed (non-blocking): ${aiResult.reason}` +
-            (aiResult.status ? ` (status ${aiResult.status})` : '') +
-            ` in ${aiResult.durationMs.toFixed(0)}ms`,
+          `${LOG_PREFIX} daily-brief check failed (non-blocking): ${briefResult.reason}` +
+            (briefResult.status ? ` (status ${briefResult.status})` : '') +
+            ` in ${briefResult.durationMs.toFixed(0)}ms`,
         );
       }
-      setPercent(STAGE_CEIL.ai);
 
-      // --- ready: respect the minDuration floor before fading out ---
-      setStage('ready');
-      setStatusText(STATUS.ready);
-      setPercent(STAGE_FLOOR.ready);
-
-      const elapsed = performance.now() - startedAt;
-      if (elapsed < minDurationMs) {
-        await sleep(minDurationMs - elapsed);
+      // Wait for the bar to actually reach 100%. If probes finished faster
+      // than the fill, the remaining time gets absorbed here. If probes were
+      // slower than the fill, this resolves immediately.
+      const fillEndsAt = tailStart + fillDuration;
+      const remainingFill = fillEndsAt - performance.now();
+      if (remainingFill > 0) {
+        await sleep(remainingFill);
         if (!isAlive()) return;
       }
-      setPercent(100);
+
+      // Bar at 100%, all probes done. Brief hold then fade.
+      setStage('ready');
+      setStatusText(STATUS.ready);
       await sleep(READY_HOLD_MS);
       if (!isAlive()) return;
 
@@ -361,10 +408,11 @@ export default function BootGate({
           errorMessage={stage === 'error' ? errorMessage ?? undefined : undefined}
           onRetry={stage === 'error' ? handleRetry : undefined}
           fadingOut={phase === 'fading'}
+          fillTransitionMs={fillTransitionMs}
         />
       )}
       <div
-        aria-hidden={childrenHidden ? 'true' : undefined}
+        {...(childrenHidden && { 'aria-hidden': 'true' })}
         className={childrenHidden ? 'invisible' : undefined}
         suppressHydrationWarning
       >
