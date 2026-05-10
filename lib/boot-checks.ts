@@ -79,9 +79,11 @@ function classifyError(err: unknown): CheckFailureReason {
 
 // /health is the cheapest possible signal. Use it as a heartbeat — BootGate
 // calls this in a loop with backoff to ride out Render cold-starts. Each call
-// times out at 5s so the gate can keep the percentage advancing.
+// times out at 5s so the gate can keep the percentage advancing. retries:0
+// because BootGate already retries with backoff; an internal retry here would
+// just double the wait per failed probe and shrink the effective poll window.
 export function checkBackendHealth(signal?: AbortSignal): Promise<CheckResult> {
-  return probe(`/api/boot/health`, { timeoutMs: 5000, retries: 1, signal });
+  return probe(`/api/boot/health`, { timeoutMs: 5000, retries: 0, signal });
 }
 
 // Confirms the markets pipeline is end-to-end ready (FastAPI → Polymarket
