@@ -62,17 +62,19 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
               value={input}
               onChange={handleInput}
               onKeyDown={handleKeyDown}
-              placeholder="Ask me anything about prediction markets..."
+              placeholder="Ask about prediction markets..."
               disabled={disabled}
               rows={1}
+              enterKeyHint="send"
+              autoCapitalize="sentences"
               className={cn(
-                "w-full resize-none rounded-2xl border border-white/10 bg-transparent px-3.5 py-3.5 sm:px-5 sm:py-4",
-                "text-sm leading-relaxed text-foreground/90 sm:text-[15px]",
+                "w-full resize-none rounded-2xl border border-white/10 bg-transparent px-3.5 py-3 sm:px-5 sm:py-4",
+                "text-base leading-relaxed text-foreground/90 sm:text-[15px]",
                 "focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/60",
                 "placeholder:text-muted-foreground/60",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
                 "transition-all duration-200",
-                "min-h-[60px] max-h-[200px] sm:min-h-[64px]",
+                "min-h-[52px] max-h-[200px] sm:min-h-[64px]",
                 isOverLimit && "border-red-500/80 focus:ring-red-500/40"
               )}
             />
@@ -90,11 +92,11 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
             disabled={disabled || !input.trim() || isOverLimit}
             size="lg"
             className={cn(
-              "rounded-2xl h-[48px] px-5 sm:h-full sm:min-h-[60px] sm:px-7",
+              "rounded-2xl h-[52px] px-5 sm:h-full sm:min-h-[60px] sm:px-7",
               "bg-gradient-to-r from-cyan-500 via-teal-500 to-purple-500",
               "hover:from-cyan-400 hover:via-teal-400 hover:to-purple-400",
               "text-white font-semibold tracking-wide",
-              "transition-all duration-200",
+              "transition-all duration-200 active:scale-[0.98]",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40"
             )}

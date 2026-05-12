@@ -69,15 +69,15 @@ export function MarketCard({ market, compact = false }: MarketCardProps) {
             <h3 className="flex-1 text-sm font-semibold leading-snug text-white line-clamp-2">
               {market.question}
             </h3>
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1.5">
               <button
                 type="button"
                 onClick={handleAsk}
                 aria-label="Ask assistant about this market"
                 title="Ask assistant about this market"
-                className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-white/50 transition hover:border-cyan-500/40 hover:text-cyan-300"
+                className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/5 text-white/60 transition hover:border-cyan-500/40 hover:text-cyan-300 active:scale-95 sm:size-8 sm:rounded-md"
               >
-                <MessageSquare className="size-3.5" />
+                <MessageSquare className="size-4 sm:size-3.5" />
               </button>
               <button
                 type="button"
@@ -85,13 +85,13 @@ export function MarketCard({ market, compact = false }: MarketCardProps) {
                 aria-label={saved ? "Remove from watchlist" : "Add to watchlist"}
                 aria-pressed={saved}
                 className={cn(
-                  "rounded-lg border p-1.5 transition",
+                  "grid size-9 place-items-center rounded-lg border transition active:scale-95 sm:size-8 sm:rounded-md",
                   saved
                     ? "border-amber-400/40 bg-amber-400/10 text-amber-300"
-                    : "border-white/10 bg-white/5 text-white/50 hover:border-white/20 hover:text-white",
+                    : "border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:text-white",
                 )}
               >
-                <Star className={cn("size-3.5", saved && "fill-current")} />
+                <Star className={cn("size-4 sm:size-3.5", saved && "fill-current")} />
               </button>
             </div>
           </div>

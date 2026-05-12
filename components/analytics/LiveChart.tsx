@@ -114,7 +114,7 @@ const LiveChart = ({ symbol }: LiveChartProps) => {
     <div className="relative overflow-hidden rounded-[16px] border border-white/10 bg-slate-900/70 shadow-[0_20px_70px_-40px_rgba(0,0,0,0.5)] backdrop-blur-sm sm:rounded-[20px] md:rounded-[24px] lg:rounded-[28px]">
 
 
-      <div className="relative h-[320px] min-h-[280px] xs:h-[360px] sm:h-[420px] md:h-[480px] lg:h-[550px] xl:h-[600px]">
+      <div className="relative h-[380px] min-h-[320px] sm:h-[460px] md:h-[520px] lg:h-[580px] xl:h-[640px]">
         <div
           ref={containerRef}
           id={`tradingview-chart-${symbol}`}

@@ -47,20 +47,20 @@ function MarketsContent() {
   return (
     <div className="space-y-5 pb-10 sm:space-y-6">
       <header className="space-y-1.5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-cyan-300/70">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-cyan-300/70 sm:text-[11px]">
           Market discovery
         </p>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+        <h1 className="text-[22px] font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl">
           Browse every live
           <span className="gradient-text"> prediction market</span>
         </h1>
-        <p className="max-w-2xl text-sm text-muted-foreground">
+        <p className="max-w-2xl text-[13px] leading-relaxed text-muted-foreground sm:text-sm">
           Filter by category, sort by volume or movers, and track the ones worth following.
         </p>
       </header>
 
       {/* Tabs */}
-      <div className="inline-flex rounded-xl border border-white/10 bg-white/[0.03] p-1">
+      <div className="grid w-full grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1 sm:inline-flex sm:w-auto">
         <TabButton
           active={tab === "discover"}
           onClick={() => setTab("discover")}
@@ -102,7 +102,7 @@ function TabButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-semibold transition",
+        "inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition active:scale-[0.98]",
         active
           ? "bg-white text-slate-950 shadow-sm"
           : "text-white/60 hover:bg-white/5 hover:text-white",

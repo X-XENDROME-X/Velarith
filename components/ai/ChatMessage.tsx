@@ -62,7 +62,7 @@ export function ChatMessage({ message, onRegenerate }: ChatMessageProps) {
       {/* Message Content */}
       <div
         className={cn(
-          "flex flex-col gap-2 max-w-[78%] sm:max-w-[70%]",
+          "flex flex-col gap-2 max-w-[85%] sm:max-w-[75%]",
           isUser && "items-end text-right"
         )}
       >

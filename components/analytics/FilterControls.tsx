@@ -21,12 +21,12 @@ const FilterControls = ({ filters, onFiltersChange }: FilterControlsProps) => {
 
 	return (
 		<div className="flex flex-wrap items-center gap-3 sm:gap-4">
-			<div className="relative">
+			<div className="relative w-full sm:w-auto">
 				<select
 					value={filters.timeframe}
 					onChange={(e) => handleTimeframeChange(e.target.value)}
 					aria-label="Select timeframe"
-					className="w-full appearance-none rounded-[16px] border border-white/10 bg-white/5 py-2.5 pl-4 pr-10 text-sm text-white backdrop-blur-sm transition focus:border-white/30 focus:bg-white/10 focus:outline-none sm:w-[180px] sm:rounded-[20px] sm:py-3 sm:text-base"
+					className="min-h-[44px] w-full appearance-none rounded-[16px] border border-white/10 bg-white/5 py-2.5 pl-4 pr-10 text-base text-white backdrop-blur-sm transition focus:border-white/30 focus:bg-white/10 focus:outline-none sm:w-[180px] sm:rounded-[20px] sm:py-3"
 				>
 					{TIMEFRAME_OPTIONS.map((option) => (
 						<option key={option} value={option} className="bg-slate-900 text-white">

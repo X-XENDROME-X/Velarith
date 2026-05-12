@@ -84,20 +84,23 @@ export function DiscoverTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-white/40" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search markets"
-            className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 pl-10 pr-4 text-sm text-white placeholder-white/40 transition focus:border-cyan-500/50 focus:bg-white/[0.05] focus:outline-none"
+            enterKeyHint="search"
+            autoComplete="off"
+            className="min-h-[44px] w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 pl-10 pr-4 text-base text-white placeholder-white/40 transition focus:border-cyan-500/50 focus:bg-white/[0.05] focus:outline-none sm:text-sm"
           />
         </div>
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm text-white/80 transition focus:border-cyan-500/50 focus:outline-none sm:w-44"
+          aria-label="Sort markets"
+          className="min-h-[44px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-base text-white/80 transition focus:border-cyan-500/50 focus:outline-none sm:w-44 sm:text-sm"
         >
           <option value="volume">Top volume</option>
           <option value="movers">Biggest movers</option>
