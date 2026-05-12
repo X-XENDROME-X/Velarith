@@ -83,7 +83,6 @@ export function MarketCard({ market, compact = false }: MarketCardProps) {
                 type="button"
                 onClick={handleToggleWatch}
                 aria-label={saved ? "Remove from watchlist" : "Add to watchlist"}
-                aria-pressed={saved}
                 className={cn(
                   "grid size-9 place-items-center rounded-lg border transition active:scale-95 sm:size-8 sm:rounded-md",
                   saved
