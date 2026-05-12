@@ -61,24 +61,31 @@ export function Sidebar() {
     <>
       {/* Mobile/Tablet top bar */}
       {isMobile && (
-        <div className="lg:hidden fixed top-0 left-0 right-0 z-[60] h-16 bg-[#0B1120]/98 backdrop-blur-2xl border-b border-white/10 shadow-xl">
-          <div className="flex h-full items-center justify-between px-4 sm:px-6">
-            <Link href="/dashboard" className="flex items-center gap-3" aria-label="Go to dashboard">
-              <div className="relative">
+        <div className="lg:hidden fixed top-0 left-0 right-0 z-[60] h-16 bg-[#0B1120]/98 backdrop-blur-2xl border-b border-white/10 shadow-xl pt-[env(safe-area-inset-top,0px)]">
+          <div className="flex h-full items-center justify-between gap-3 px-3 sm:px-6">
+            <Link
+              href="/dashboard"
+              className="flex min-w-0 items-center gap-2.5"
+              aria-label="Go to dashboard"
+            >
+              <div className="relative flex-shrink-0">
                 <div className="absolute inset-0 bg-cyan-500/30 blur-xl rounded-full" />
                 <Image
                   src="/images/tlogo.png"
                   alt="Velarith logo"
-                  width={36}
-                  height={36}
-                  className="relative z-10 object-contain drop-shadow-lg"
+                  width={32}
+                  height={32}
+                  className="relative z-10 h-8 w-8 object-contain drop-shadow-lg sm:h-9 sm:w-9"
                 />
               </div>
-              <span className="text-lg font-semibold gradient-text">Velarith</span>
+              <span className="truncate text-base font-semibold gradient-text sm:text-lg">
+                Velarith
+              </span>
             </Link>
             <button
+              type="button"
               onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
               aria-label={isMobileOpen ? "Close navigation" : "Open navigation"}
             >
               {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

@@ -48,7 +48,12 @@ export function CategoryChips({ selected, onSelect, className }: CategoryChipsPr
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
   return (
-    <div className={cn("flex flex-wrap gap-1.5", className)}>
+    <div
+      className={cn(
+        "scroll-snap-x -mx-3 flex gap-1.5 px-3 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0",
+        className,
+      )}
+    >
       <Chip
         label="All"
         count={total || null}
@@ -84,7 +89,7 @@ function Chip({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium capitalize transition",
+        "inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-medium capitalize transition active:scale-95",
         active
           ? "border-cyan-400/50 bg-cyan-500/15 text-cyan-100 shadow-[0_0_20px_-5px_rgba(34,211,238,0.4)]"
           : "border-white/10 bg-white/[0.03] text-white/60 hover:border-white/20 hover:text-white",

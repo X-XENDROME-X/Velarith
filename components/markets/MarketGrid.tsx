@@ -20,7 +20,7 @@ export function MarketGrid({ markets, className, emptyLabel }: MarketGridProps) 
   return (
     <div
       className={cn(
-        "grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+        "grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
         className,
       )}
     >
@@ -33,7 +33,7 @@ export function MarketGrid({ markets, className, emptyLabel }: MarketGridProps) 
 
 export function MarketGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}

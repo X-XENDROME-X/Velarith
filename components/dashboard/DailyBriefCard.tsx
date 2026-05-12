@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import { fetchDailyBrief, type DailyBrief } from "@/lib/api/backend";
 import { RetryError } from "@/components/ui/RetryError";
 import { BackendWakingHint } from "@/components/ui/BackendWakingHint";
+import { cn } from "@/lib/utils";
 
 function normalizeBrief(brief: DailyBrief | null): DailyBrief | null {
   if (!brief) return null;
@@ -57,7 +58,7 @@ function tryParseBriefPayload(text: string): { headline?: string; body?: string 
   // Change end: tolerate malformed JSON payloads from model output
 }
 
-export function DailyBriefCard() {
+export function DailyBriefCard({ className }: { className?: string } = {}) {
   const [brief, setBrief] = useState<DailyBrief | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -81,7 +82,12 @@ export function DailyBriefCard() {
   }, [reload]);
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/60 via-slate-900/70 to-purple-950/40 p-5 shadow-[0_30px_80px_-50px_rgba(34,211,238,0.4)] sm:p-6">
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/60 via-slate-900/70 to-purple-950/40 p-4 shadow-[0_30px_80px_-50px_rgba(34,211,238,0.4)] sm:p-6",
+        className,
+      )}
+    >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.15),_transparent_60%)]" />
       <div className="relative">
         <div className="flex items-center gap-3">

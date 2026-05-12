@@ -231,29 +231,33 @@ function AssistantPageInner() {
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="border-b border-white/5 bg-card/70 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between gap-4">
-          <div className="space-y-0.5">
-            <h1 className="gradient-text text-xl font-semibold sm:text-2xl">Velarith Assistant</h1>
-            <p className="text-sm text-muted-foreground">
+      <div className="border-b border-white/5 bg-card/70 px-3 py-3 backdrop-blur sm:px-6 sm:py-4 lg:px-8">
+        <div className="relative flex flex-wrap items-start justify-between gap-2 sm:flex-nowrap sm:items-center sm:gap-4">
+          <div className="min-w-0 space-y-0.5">
+            <h1 className="gradient-text text-lg font-semibold sm:text-2xl">Velarith Assistant</h1>
+            <p className="text-xs text-muted-foreground sm:text-sm">
               Ask market questions with focused, evidence-backed context.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
             {provider && <ProviderBadge info={provider} />}
             {messages.length > 0 && (
               <>
                 <button
+                  type="button"
                   onClick={handleExportChat}
-                  className="rounded-lg border border-white/10 bg-card/50 px-3 py-1.5 text-sm text-muted-foreground transition-all hover:border-cyan-500/30 hover:bg-card/80 hover:text-cyan-400"
+                  aria-label="Export chat"
+                  className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-card/50 text-muted-foreground transition-all hover:border-cyan-500/30 hover:bg-card/80 hover:text-cyan-400 active:scale-95"
                   title="Export chat"
                 >
                   <Download className="h-4 w-4" />
                 </button>
                 <button
+                  type="button"
                   onClick={handleClearChat}
-                  className="rounded-lg border border-white/10 bg-card/50 px-3 py-1.5 text-sm text-muted-foreground transition-all hover:border-red-500/30 hover:bg-card/80 hover:text-red-400"
+                  aria-label="Clear chat"
+                  className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-card/50 text-muted-foreground transition-all hover:border-red-500/30 hover:bg-card/80 hover:text-red-400 active:scale-95"
                   title="Clear chat"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -272,23 +276,23 @@ function AssistantPageInner() {
 
       <div className="relative flex-1 overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,116,144,0.15),_transparent_55%)]" />
-        <div className="relative h-full overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="relative h-full overflow-y-auto px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
           <div className="mx-auto flex h-full w-full max-w-5xl flex-col gap-6">
             {messages.length === 0 && !isLoading ? (
-              <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8">
-                <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-cyan-900/40 via-slate-900/70 to-purple-900/40 p-8 text-center shadow-2xl">
+              <div className="flex flex-1 flex-col items-center justify-center gap-6 py-6 sm:gap-8 sm:py-8">
+                <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-cyan-900/40 via-slate-900/70 to-purple-900/40 p-5 text-center shadow-2xl sm:rounded-3xl sm:p-8">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.25),_transparent_60%)]" />
-                  <div className="relative space-y-4">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-500/40 bg-white/5">
-                      <Sparkles className="h-8 w-8 text-cyan-300" />
+                  <div className="relative space-y-3 sm:space-y-4">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-500/40 bg-white/5 sm:h-16 sm:w-16">
+                      <Sparkles className="h-7 w-7 text-cyan-300 sm:h-8 sm:w-8" />
                     </div>
-                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                    <h2 className="text-xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl">
                       Ask market questions with Velarith Assistant
                     </h2>
-                    <p className="mx-auto max-w-2xl text-base text-muted-foreground/80 sm:text-lg">
+                    <p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground/80 sm:text-base lg:text-lg">
                       Explore prediction markets with context from equities and macro signals.
-                      Open this page with <code className="rounded bg-white/5 px-1.5 py-0.5 text-sm">?market=slug</code>{" "}
-                      or <code className="rounded bg-white/5 px-1.5 py-0.5 text-sm">?ticker=SYM</code> to start with focused context.
+                      Open this page with <code className="rounded bg-white/5 px-1.5 py-0.5 text-[12px] sm:text-sm">?market=slug</code>{" "}
+                      or <code className="rounded bg-white/5 px-1.5 py-0.5 text-[12px] sm:text-sm">?ticker=SYM</code> to start with focused context.
                     </p>
                   </div>
                 </div>
@@ -307,6 +311,7 @@ function AssistantPageInner() {
                       <p className="text-sm text-rose-300/90">{error}</p>
                     </div>
                     <button
+                      type="button"
                       onClick={() => setError(null)}
                       className="text-sm text-rose-400 hover:text-rose-300"
                     >
@@ -361,6 +366,7 @@ function AssistantPageInner() {
                   {isIncomplete && !isLoading && (
                     <div className="flex animate-in fade-in slide-in-from-bottom-2 justify-center duration-300">
                       <button
+                        type="button"
                         onClick={handleContinueResponse}
                         className="group flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 via-teal-500/10 to-cyan-500/10 px-6 py-3 text-sm font-medium text-cyan-200 shadow-lg transition-all hover:border-cyan-400/50 hover:from-cyan-500/20 hover:via-teal-500/20 hover:to-cyan-500/20"
                       >
@@ -378,7 +384,7 @@ function AssistantPageInner() {
         </div>
       </div>
 
-      <div className="px-4 py-4 sm:px-6 lg:px-8">
+      <div className="px-3 py-3 pb-safe sm:px-6 sm:py-4 lg:px-8">
         <div className="mx-auto w-full max-w-5xl">
           <ChatInput onSend={handleSendMessage} disabled={isLoading} />
         </div>

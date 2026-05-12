@@ -31,12 +31,15 @@ export function QuickAskBar() {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Ask about a market, a ticker, or a thesis…"
-          className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/40 backdrop-blur-sm transition focus:border-cyan-500/50 focus:bg-white/10 focus:outline-none"
+          enterKeyHint="send"
+          autoCapitalize="sentences"
+          autoComplete="off"
+          className="min-h-[44px] flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-base text-white placeholder-white/40 backdrop-blur-sm transition focus:border-cyan-500/50 focus:bg-white/10 focus:outline-none sm:text-sm"
         />
         <button
           type="submit"
           disabled={!prompt.trim()}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:from-cyan-400 hover:to-teal-400 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:from-cyan-400 hover:to-teal-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
           Ask <ArrowRight className="size-4" />
         </button>

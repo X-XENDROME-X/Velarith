@@ -41,15 +41,17 @@ function ResearchPageInner() {
 	return (
 		<>
 			<TickerTape />
+			{/* Spacer so the fixed TickerTape doesn't overlap the page header. */}
+			<div aria-hidden className="h-10 sm:h-11 lg:h-12" />
 			<div className="space-y-4 sm:space-y-5 lg:space-y-6">
 				<div className="space-y-1">
-					<p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300/70">
+					<p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-300/70 sm:text-[11px]">
 						Market research
 					</p>
-					<h1 className="text-xl font-bold text-white sm:text-2xl">
+					<h1 className="text-[20px] font-bold leading-tight text-white sm:text-2xl lg:text-3xl">
 						Use stock signals to sharpen your market view
 					</h1>
-					<p className="text-sm text-white/55">
+					<p className="text-[13px] leading-relaxed text-white/55 sm:text-sm">
 						Technicals, fundamentals, and sentiment presented as supporting evidence for
 						prediction market analysis.
 					</p>

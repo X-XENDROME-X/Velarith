@@ -58,7 +58,7 @@ export function MarketHeader({ detail }: MarketHeaderProps) {
               <span className="text-[11px] text-white/40">· {detail.eventTitle}</span>
             )}
           </div>
-          <h1 className="mt-2 text-xl font-bold leading-snug text-white sm:text-2xl lg:text-3xl">
+          <h1 className="mt-2 text-lg font-bold leading-snug text-white sm:text-2xl lg:text-3xl">
             {detail.question}
           </h1>
           {detail.endDate && (
@@ -69,47 +69,47 @@ export function MarketHeader({ detail }: MarketHeaderProps) {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-4">
-        <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.07] px-4 py-3">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+        <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.07] px-3 py-3 sm:px-4">
           <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-300/70">
             YES
           </p>
-          <p className="mt-1 text-2xl font-bold text-emerald-300">
+          <p className="mt-1 text-xl font-bold text-emerald-300 sm:text-2xl">
             {formatPercent(detail.yesPrice)}
           </p>
         </div>
-        <div className="rounded-2xl border border-rose-500/25 bg-rose-500/[0.07] px-4 py-3">
+        <div className="rounded-2xl border border-rose-500/25 bg-rose-500/[0.07] px-3 py-3 sm:px-4">
           <p className="text-[10px] font-medium uppercase tracking-wider text-rose-300/70">
             NO
           </p>
-          <p className="mt-1 text-2xl font-bold text-rose-300">
+          <p className="mt-1 text-xl font-bold text-rose-300 sm:text-2xl">
             {formatPercent(detail.noPrice)}
           </p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3 sm:px-4">
           <p className="text-[10px] font-medium uppercase tracking-wider text-white/50">
             24h change
           </p>
           <p
             className={cn(
-              "mt-1 text-2xl font-bold",
+              "mt-1 text-xl font-bold sm:text-2xl",
               positive ? "text-emerald-300" : "text-rose-300",
             )}
           >
             {formatChange(detail.change24h)}
           </p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3 sm:px-4">
           <p className="text-[10px] font-medium uppercase tracking-wider text-white/50">
             24h volume
           </p>
-          <p className="mt-1 text-2xl font-bold text-white">
+          <p className="mt-1 text-xl font-bold text-white sm:text-2xl">
             {formatVolume(detail.volume24h)}
           </p>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
         <button
           type="button"
           onClick={() =>
@@ -120,7 +120,7 @@ export function MarketHeader({ detail }: MarketHeaderProps) {
             })
           }
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-xl border px-4 py-2 text-sm font-semibold transition",
+            "inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-semibold transition active:scale-[0.98]",
             saved
               ? "border-amber-500/40 bg-amber-500/10 text-amber-200 hover:border-amber-400/60"
               : "border-white/15 bg-white/5 text-white hover:border-white/25 hover:bg-white/10",
@@ -131,15 +131,15 @@ export function MarketHeader({ detail }: MarketHeaderProps) {
         </button>
         <Link
           href={`/assistant?market=${detail.slug}`}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-500/40 bg-gradient-to-r from-cyan-500/10 to-teal-500/10 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:border-cyan-400/60 hover:from-cyan-500/20 hover:to-teal-500/20"
+          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-cyan-500/40 bg-gradient-to-r from-cyan-500/10 to-teal-500/10 px-4 py-2.5 text-sm font-semibold text-cyan-200 transition hover:border-cyan-400/60 hover:from-cyan-500/20 hover:to-teal-500/20 active:scale-[0.98]"
         >
-          <MessageSquare className="size-4" /> Ask assistant about this
+          <MessageSquare className="size-4" /> Ask assistant
         </Link>
         <a
           href={`https://polymarket.com/event/${externalEventSlug}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-white/70 transition hover:border-white/20 hover:text-white"
+          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-white/70 transition hover:border-white/20 hover:text-white active:scale-[0.98]"
         >
           <ExternalLink className="size-3.5" /> Polymarket
         </a>

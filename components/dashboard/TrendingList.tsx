@@ -34,7 +34,7 @@ export function TrendingList() {
   }, [reload]);
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+    <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-5">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Flame className="size-4 text-amber-400" />
@@ -77,7 +77,7 @@ export function TrendingList() {
               <Link
                 key={m.slug}
                 href={`/markets/${m.slug}`}
-                className="flex items-center gap-3 rounded-lg border border-transparent px-2 py-2 transition hover:border-white/10 hover:bg-white/[0.03]"
+                className="flex items-center gap-2.5 rounded-lg border border-transparent px-2 py-2.5 transition hover:border-white/10 hover:bg-white/[0.03] active:bg-white/[0.05] sm:gap-3"
               >
                 {m.image ? (
                   <div className="relative size-8 shrink-0 overflow-hidden rounded-md border border-white/10">
