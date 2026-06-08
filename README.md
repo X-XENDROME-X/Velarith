@@ -1,22 +1,8 @@
-<h1 align="center">Velarith</h1>
+<h1 align="center"> Velarith 🐂 </h1>
 
 <p align="center">
   <img src="public/images/logo.jpg" alt="Velarith" width="280" />
 </p>
-
-<p align="center">
-  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js" alt="Next.js" /></a>
-  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
-  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-0.12x-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" /></a>
-  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" /></a>
-  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License" />
-</p>
-
-<p align="center">
-  <strong><a href="https://velarith.vercel.app">Live Demo</a></strong>
-</p>
-
----
 
 Velarith is an AI-powered prediction market research tool built at the ASU Claude Builder Club Hackathon, Fall 2025. It pulls live market data, overlays stock technicals, fundamentals, and sentiment analysis, and lets you query a Claude-powered assistant with real market context already loaded in. The goal is to take a prediction market question and give you enough information to form a confident, reasoned position.
 
