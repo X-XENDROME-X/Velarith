@@ -1,8 +1,22 @@
-<h1 align="center"> Velarith 🐂 </h1>
+<h1 align="center">Velarith</h1>
 
 <p align="center">
   <img src="public/images/logo.jpg" alt="Velarith" width="280" />
 </p>
+
+<p align="center">
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js" alt="Next.js" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-0.12x-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" /></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" /></a>
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License" />
+</p>
+
+<p align="center">
+  <strong><a href="https://velarith.vercel.app">Live Demo</a></strong>
+</p>
+
+---
 
 Velarith is an AI-powered prediction market research tool built at the ASU Claude Builder Club Hackathon, Fall 2025. It pulls live market data, overlays stock technicals, fundamentals, and sentiment analysis, and lets you query a Claude-powered assistant with real market context already loaded in. The goal is to take a prediction market question and give you enough information to form a confident, reasoned position.
 
@@ -26,7 +40,7 @@ Velarith is an AI-powered prediction market research tool built at the ASU Claud
 |---|---|
 | Framework | Next.js 15, React 19, TypeScript 5 |
 | Styling | Tailwind CSS 3, Radix UI, shadcn/ui |
-| AI streaming | Vercel AI SDK 6 (`ai`, `@ai-sdk/anthropic`, `@ai-sdk/groq`) |
+| AI streaming | Vercel AI SDK 6 |
 | Charts | TradingView widget (live), Recharts 3 (odds history) |
 | State | Zustand 5, TanStack Query 5 |
 | Markdown | react-markdown, remark-gfm |
@@ -41,7 +55,7 @@ Velarith is an AI-powered prediction market research tool built at the ASU Claud
 | Market data | httpx, cachetools (TTL in-memory cache) |
 | Stock data | yfinance, ta (technical indicators) |
 | Sentiment | pytrends (Google Trends) |
-| AI | anthropic 0.72+, groq |
+| AI | anthropic, groq |
 | Validation | Pydantic 2 |
 
 ### Data sources
@@ -52,7 +66,7 @@ Velarith is an AI-powered prediction market research tool built at the ASU Claud
 | Prediction market CLOB REST API | Per-market odds price history |
 | Finnhub | Real-time stock quotes (ticker tape, watchlist, evidence panels) |
 | Yahoo Finance | Historical data, fundamentals, ticker search |
-| Google Trends (pytrends) | Sentiment scoring for research |
+| Google Trends | Sentiment scoring for research |
 | TradingView widget | Live candlestick chart in Research |
 
 ### Infrastructure
@@ -81,7 +95,7 @@ npm install
 Create `.env.local` in the project root:
 
 ```env
-ANTHROPIC_API_KEY=sk-ant-api03-...
+ANTHROPIC_API_KEY=your_key
 FINNHUB_API_KEY=your_key
 GROQ_API_KEY=your_key
 NEXT_PUBLIC_BACKEND_URL=http://localhost:10000
@@ -103,7 +117,7 @@ pip install -r requirements.txt
 Create `backend/.env`:
 
 ```env
-ANTHROPIC_API_KEY=sk-ant-api03-...
+ANTHROPIC_API_KEY=your_key
 GROQ_API_KEY=your_key
 FINNHUB_API_KEY=your_key
 ALLOWED_ORIGINS=http://localhost:3000
@@ -124,49 +138,6 @@ npm run dev:all
 ### Deployment
 
 The repo includes a `render.yaml` Blueprint for one-click deployment of the FastAPI backend to Render. Set `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `FINNHUB_API_KEY`, and `ALLOWED_ORIGINS` as environment variables in the Render dashboard. The frontend deploys to Vercel via the standard GitHub integration with the same env vars added there.
-
-## Project Structure
-
-```
-Velarith/
-├── app/
-│   ├── dashboard/page.tsx
-│   ├── markets/
-│   │   ├── page.tsx
-│   │   └── [slug]/page.tsx
-│   ├── research/page.tsx
-│   ├── assistant/page.tsx
-│   └── api/
-│       ├── chat/route.ts             # Streaming AI via Vercel AI SDK
-│       ├── stocks/quotes/route.ts    # Finnhub proxy
-│       └── stocks/search/route.ts   # Yahoo Finance search proxy
-├── backend/
-│   ├── main.py                       # FastAPI entry point
-│   ├── routers/
-│   │   ├── health.py
-│   │   ├── polymarket.py             # Gamma + CLOB REST integration
-│   │   ├── research.py               # Technical, fundamental, sentiment endpoints
-│   │   └── ai.py                     # Daily brief, market take, related tickers
-│   ├── services/
-│   │   ├── ai_provider.py            # Claude + Groq async router
-│   │   ├── polymarket.py             # Data layer with in-memory TTL cache
-│   │   └── ai_takes.py               # Cached AI take generation
-│   └── blueprints/analysis.py        # Composite score engine
-├── components/
-│   ├── layout/Sidebar.tsx
-│   ├── dashboard/                    # MoversRow, TrendingList, DailyBriefCard, WatchlistSnapshot
-│   ├── markets/                      # MarketCard, MarketGrid, CategoryChips
-│   ├── market-detail/                # MarketHeader, OddsHistoryChart, AITakeSection, RelatedTickersPanel
-│   ├── analytics/                    # TickerTape, LiveChart, AnalysisPanel, SearchBar
-│   ├── ai/                           # ChatMessage, ChatInput, SuggestedPrompts
-│   └── BootGate.tsx                  # Backend health check with phased loading screen
-├── lib/
-│   ├── api/backend.ts                # Typed frontend client for the FastAPI backend
-│   ├── api/market-context.ts         # Live index quote injection for AI context
-│   ├── hooks/useWatchlist.ts         # localStorage-backed watchlist
-│   └── boot-checks.ts               # Exponential backoff health check logic
-└── render.yaml                       # Render Blueprint for backend deployment
-```
 
 ## Team
 
