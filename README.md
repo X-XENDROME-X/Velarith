@@ -135,6 +135,10 @@ The repo includes a `render.yaml` Blueprint for one-click deployment of the Fast
 | **Anshuman Yadav** | [github.com/ayadav75](https://github.com/ayadav75) |
 | **Emeka** | [github.com/Ekwenibe](https://github.com/Ekwenibe) |
 
+## Disclaimer
+
+Velarith is provided for informational and research purposes only. Nothing on this platform constitutes financial advice, investment advice, trading advice, or any other kind of advice. Market analysis, AI-generated summaries, and sentiment scores are tools to assist your own research — they are not recommendations to buy, sell, or hold any asset or position. Always consult a qualified financial professional before making any investment or trading decisions. Past market behavior is not indicative of future results.
+
 ## License
 
 MIT License. Copyright (c) 2025 Team Velarith.

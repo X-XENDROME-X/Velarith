@@ -387,6 +387,9 @@ function AssistantPageInner() {
       <div className="px-3 py-3 pb-safe sm:px-6 sm:py-4 lg:px-8">
         <div className="mx-auto w-full max-w-5xl">
           <ChatInput onSend={handleSendMessage} disabled={isLoading} />
+          <p className="mt-2.5 text-center text-[10px] leading-relaxed text-muted-foreground/40">
+            For informational and research purposes only. Not financial advice. Consult a qualified financial professional before making any investment decisions.
+          </p>
         </div>
       </div>
     </div>
