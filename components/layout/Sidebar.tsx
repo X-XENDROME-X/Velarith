@@ -212,7 +212,14 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* M2: Settings + Log in removed — auth/settings deferred to v2. */}
+        {/* Disclaimer */}
+        {(isHovered || isMobileOpen) && (
+          <div className="border-t border-white/5 px-5 py-4">
+            <p className="text-[10px] leading-relaxed text-white/25">
+              For informational and research purposes only. Nothing on this platform constitutes financial advice. Always consult a qualified financial professional before making any investment or trading decisions.
+            </p>
+          </div>
+        )}
       </div>
     </>
   );

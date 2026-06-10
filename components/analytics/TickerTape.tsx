@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import type { StockQuote } from "@/lib/types/analytics";
 import { cn } from "@/lib/utils";
 
@@ -54,11 +53,6 @@ const TickerTape = () => {
 				<div className="flex animate-ticker items-center gap-4 py-2 xs:gap-5 xs:py-2.5 sm:gap-6 sm:py-3 lg:gap-8">
 					{[...quotes, ...quotes].map((quote, index) => (
 						<div key={`${quote.symbol}-${index}`} className="flex shrink-0 items-center gap-1 px-2 xs:gap-1.5 xs:px-3 sm:gap-2 sm:px-4 lg:px-6">
-							{quote.logo && (
-								<div className="relative size-3.5 shrink-0 overflow-hidden rounded-full xs:size-4 sm:size-5">
-									<Image src={quote.logo} alt={quote.symbol} fill className="object-cover" />
-								</div>
-							)}
 							<span className="text-[10px] font-semibold text-white xs:text-[11px] sm:text-xs md:text-sm">{quote.symbol}</span>
 							<span className="text-[10px] font-medium text-white/90 xs:text-[11px] sm:text-xs md:text-sm">
 								{quote.price.toFixed(2)}
