@@ -127,11 +127,11 @@ export function DailyBriefCard({ className }: { className?: string } = {}) {
         )}
 
         {!loading && !error && displayBrief && (
-          <div className="mt-5 space-y-3">
-            <h3 className="text-lg font-semibold leading-snug text-white sm:text-xl">
+          <div className="mt-5 space-y-3 min-w-0 overflow-hidden">
+            <h3 className="text-base font-semibold leading-snug text-white sm:text-lg break-words">
               {displayBrief.headline}
             </h3>
-            <p className="text-sm leading-relaxed text-white/70 whitespace-pre-line">
+            <p className="text-sm leading-relaxed text-white/70 whitespace-pre-line break-words">
               {displayBrief.body}
             </p>
           </div>

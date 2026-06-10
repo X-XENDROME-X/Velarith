@@ -11,8 +11,8 @@ export default function AssistantLayout({
       {/* Responsive layout:
           - Mobile/Tablet: Full width with top padding for hamburger button
           - Desktop: Left margin for collapsed sidebar (80px) */}
-  <main className="flex-1 overflow-y-auto pt-16 lg:pt-0 lg:ml-20 bg-background transition-all duration-500">
-        <div className="h-full">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pt-16 lg:pt-0 lg:ml-20 bg-background transition-all duration-500">
+        <div className="h-full w-full min-w-0">
           {children}
         </div>
       </main>
