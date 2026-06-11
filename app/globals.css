@@ -321,6 +321,7 @@ a {
 html,
 body {
   background-color: #08101e;
+  overflow-x: hidden;
 }
 
 html.velarith-booting,
