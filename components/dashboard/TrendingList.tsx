@@ -34,7 +34,7 @@ export function TrendingList() {
   }, [reload]);
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-5">
+    <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-5">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Flame className="size-4 text-amber-400" />
@@ -77,7 +77,7 @@ export function TrendingList() {
               <Link
                 key={m.slug}
                 href={`/markets/${m.slug}`}
-                className="flex items-center gap-2.5 rounded-lg border border-transparent px-2 py-2.5 transition hover:border-white/10 hover:bg-white/[0.03] active:bg-white/[0.05] sm:gap-3"
+                className="flex min-h-[48px] items-center gap-2 rounded-lg border border-transparent px-2 py-2 transition hover:border-white/10 hover:bg-white/[0.03] active:bg-white/[0.05] sm:gap-3 sm:px-3"
               >
                 {m.image ? (
                   <div className="relative size-8 shrink-0 overflow-hidden rounded-md border border-white/10">
@@ -87,13 +87,13 @@ export function TrendingList() {
                   <div className="size-8 shrink-0 rounded-md border border-white/10 bg-white/5" />
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-white">{m.question}</p>
-                  <div className="mt-0.5 flex items-center gap-2 text-[11px] text-white/50">
+                  <p className="truncate text-[13px] text-white sm:text-sm">{m.question}</p>
+                  <div className="mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden text-[11px] text-white/50">
                     <CategoryBadge category={m.category} />
-                    <span>Vol {formatVolume(m.volume24h)}</span>
+                    <span className="truncate">Vol {formatVolume(m.volume24h)}</span>
                   </div>
                 </div>
-                <div className="flex shrink-0 flex-col items-end text-[11px]">
+                <div className="ml-2 flex w-14 shrink-0 flex-col items-end text-[11px]">
                   <span className="font-semibold text-emerald-300">{formatPercent(m.yesPrice)}</span>
                   <span
                     className={cn(

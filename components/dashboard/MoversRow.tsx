@@ -43,7 +43,7 @@ export function MoversRow() {
       {loading && (
         <div className="space-y-3">
           <BackendWakingHint loading={loading} />
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
@@ -64,7 +64,7 @@ export function MoversRow() {
       )}
 
       {!loading && !error && (
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
           {movers.map((m) => (
             <MarketCard key={m.slug} market={m} />
           ))}
