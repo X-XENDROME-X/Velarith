@@ -44,12 +44,13 @@ export function Sidebar() {
     setIsMobileOpen(false);
   }, [pathname]);
 
-  // Prevent body scroll when mobile menu is open
+  // Prevent body scroll when mobile menu is open.
+  // Use overflowY only so the CSS overflow-x: hidden rule is never overridden.
   useEffect(() => {
     if (isMobileOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflowY = 'hidden';
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflowY = '';
     }
   }, [isMobileOpen]);
 

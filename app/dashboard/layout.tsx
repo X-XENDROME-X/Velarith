@@ -6,16 +6,19 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen overflow-hidden">
+    <>
       <Sidebar />
-      {/* Responsive layout:
-          - Mobile/Tablet: Full width with top padding for hamburger button
-          - Desktop: Left margin for collapsed sidebar (80px) */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pt-16 lg:pt-0 lg:ml-20 bg-background transition-all duration-500">
+      {/*
+        Use fixed positioning (not flex-1) so main width = viewport width
+        regardless of any flex/compositing quirks from the fixed sidebar.
+        Mobile:  top-16 (below 64px header), full width
+        Desktop: top-0, left-20 (right of 80px sidebar)
+      */}
+      <main className="fixed inset-0 top-16 overflow-y-auto overflow-x-hidden bg-background lg:left-20 lg:top-0">
         <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 py-5 sm:py-6 lg:py-8 pb-safe">
           {children}
         </div>
       </main>
-    </div>
+    </>
   );
 }
