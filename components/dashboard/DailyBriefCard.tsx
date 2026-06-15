@@ -89,16 +89,15 @@ export function DailyBriefCard({ className }: { className?: string } = {}) {
       )}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.15),_transparent_60%)]" />
-      <div className="relative">
+      <div className="relative min-w-0 w-full">
         <div className="flex items-center gap-3">
-          <div className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 p-2">
+          <div className="shrink-0 rounded-xl border border-cyan-500/40 bg-cyan-500/10 p-2">
             <Sparkles className="size-5 text-cyan-300" />
           </div>
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300/80">
               Today&apos;s AI brief
             </p>
-            {/* Provider badge intentionally hidden for cleaner product presentation. */}
           </div>
         </div>
 
@@ -127,11 +126,11 @@ export function DailyBriefCard({ className }: { className?: string } = {}) {
         )}
 
         {!loading && !error && displayBrief && (
-          <div className="mt-5 space-y-3 min-w-0 overflow-hidden">
-            <h3 className="text-base font-semibold leading-snug text-white sm:text-lg break-words">
+          <div className="mt-5 min-w-0 w-full space-y-2.5 overflow-hidden">
+            <h3 className="text-sm font-semibold leading-snug text-white [overflow-wrap:anywhere] sm:text-base lg:text-lg">
               {displayBrief.headline}
             </h3>
-            <p className="text-sm leading-relaxed text-white/70 whitespace-pre-line break-words">
+            <p className="text-[13px] leading-relaxed text-white/70 [overflow-wrap:anywhere] sm:text-sm">
               {displayBrief.body}
             </p>
           </div>
