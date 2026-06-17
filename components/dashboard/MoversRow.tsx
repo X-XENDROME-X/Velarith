@@ -30,11 +30,12 @@ export function MoversRow() {
   }, [reload]);
 
   return (
-    <section>
-      <div className="mb-3 flex items-baseline justify-between">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="size-4 text-emerald-400" />
-          <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+    <section className="w-full max-w-full min-w-0 overflow-x-clip">
+      {/* Change start: keep movers grid constrained on small screens */}
+      <div className="mb-3 flex min-w-0 items-baseline justify-between">
+        <div className="flex min-w-0 items-center gap-2">
+          <TrendingUp className="size-4 shrink-0 text-emerald-400" />
+          <h2 className="truncate text-[12px] font-semibold uppercase tracking-[0.12em] text-white/80 min-[380px]:text-sm min-[380px]:tracking-[0.15em]">
             Top movers · 24h
           </h2>
         </div>
@@ -43,7 +44,7 @@ export function MoversRow() {
       {loading && (
         <div className="space-y-3">
           <BackendWakingHint loading={loading} />
-          <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
+          <div className="grid min-w-0 grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
@@ -64,12 +65,13 @@ export function MoversRow() {
       )}
 
       {!loading && !error && (
-        <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
+        <div className="grid min-w-0 grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
           {movers.map((m) => (
             <MarketCard key={m.slug} market={m} />
           ))}
         </div>
       )}
+      {/* Change end: keep movers grid constrained on small screens */}
     </section>
   );
 }
