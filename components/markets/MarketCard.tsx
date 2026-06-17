@@ -42,11 +42,12 @@ export function MarketCard({ market, compact = false }: MarketCardProps) {
     <Link
       href={`/markets/${market.slug}`}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm transition",
+        "group relative flex w-full max-w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-3.5 backdrop-blur-sm transition min-[380px]:p-4",
         "hover:border-white/20 hover:bg-white/[0.05] hover:shadow-[0_20px_40px_-30px_rgba(34,211,238,0.3)]",
       )}
     >
-      <div className="flex items-start gap-3">
+      {/* Change start: make market cards shrink cleanly on mobile */}
+      <div className="flex min-w-0 items-start gap-3">
         {market.image ? (
           <div className="relative size-10 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/5">
             <Image
@@ -64,9 +65,9 @@ export function MarketCard({ market, compact = false }: MarketCardProps) {
           </div>
         )}
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start gap-2">
-            <h3 className="flex-1 text-sm font-semibold leading-snug text-white line-clamp-2">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <div className="flex min-w-0 items-start gap-2">
+            <h3 className="min-w-0 flex-1 text-sm font-semibold leading-snug text-white line-clamp-2 [overflow-wrap:anywhere]">
               {market.question}
             </h3>
             <div className="flex shrink-0 items-center gap-1.5">
@@ -94,14 +95,14 @@ export function MarketCard({ market, compact = false }: MarketCardProps) {
               </button>
             </div>
           </div>
-          <div className="mt-1.5 flex items-center gap-2 text-[11px] text-white/50">
-            <CategoryBadge category={market.category} />
-            {market.endDate && <span>· Ends {formatEndDate(market.endDate)}</span>}
+          <div className="mt-1.5 flex min-w-0 items-center gap-2 overflow-hidden text-[11px] text-white/50">
+            <CategoryBadge category={market.category} className="shrink-0" />
+            {market.endDate && <span className="truncate">· Ends {formatEndDate(market.endDate)}</span>}
           </div>
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2">
+      <div className="mt-4 grid min-w-0 grid-cols-2 gap-2">
         <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.06] px-3 py-2">
           <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-300/70">Yes</p>
           <p className="mt-0.5 text-lg font-semibold text-emerald-300">
@@ -117,10 +118,10 @@ export function MarketCard({ market, compact = false }: MarketCardProps) {
       </div>
 
       {!compact && (
-        <div className="mt-3 flex items-center justify-between text-xs">
+        <div className="mt-3 flex min-w-0 items-center justify-between gap-2 text-xs">
           <span
             className={cn(
-              "inline-flex items-center gap-1 rounded-lg px-2 py-1 font-medium",
+              "inline-flex min-w-0 items-center gap-1 rounded-lg px-2 py-1 font-medium",
               positive ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300",
             )}
           >
@@ -129,9 +130,10 @@ export function MarketCard({ market, compact = false }: MarketCardProps) {
             />
             {formatChange(market.change24h)} 24h
           </span>
-          <span className="text-white/50">Vol {formatVolume(market.volume24h)}</span>
+          <span className="min-w-0 truncate text-white/50">Vol {formatVolume(market.volume24h)}</span>
         </div>
       )}
+      {/* Change end: make market cards shrink cleanly on mobile */}
     </Link>
   );
 }

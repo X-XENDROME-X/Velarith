@@ -84,18 +84,19 @@ export function DailyBriefCard({ className }: { className?: string } = {}) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/60 via-slate-900/70 to-purple-950/40 p-4 shadow-[0_30px_80px_-50px_rgba(34,211,238,0.4)] sm:p-6",
+        "relative w-full max-w-full min-w-0 overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/60 via-slate-900/70 to-purple-950/40 p-4 shadow-[0_30px_80px_-50px_rgba(34,211,238,0.4)] sm:p-6",
         className,
       )}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.15),_transparent_60%)]" />
-      <div className="relative min-w-0 w-full">
-        <div className="flex items-center gap-3">
+      {/* Change start: keep AI brief copy readable without horizontal overflow */}
+      <div className="relative w-full min-w-0">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="shrink-0 rounded-xl border border-cyan-500/40 bg-cyan-500/10 p-2">
             <Sparkles className="size-5 text-cyan-300" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300/80">
+            <p className="truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-300/80 min-[380px]:text-[11px] min-[380px]:tracking-[0.2em]">
               Today&apos;s AI brief
             </p>
           </div>
@@ -126,16 +127,17 @@ export function DailyBriefCard({ className }: { className?: string } = {}) {
         )}
 
         {!loading && !error && displayBrief && (
-          <div className="mt-5 min-w-0 w-full space-y-2.5 overflow-hidden">
-            <h3 className="text-sm font-semibold leading-snug text-white [overflow-wrap:anywhere] sm:text-base lg:text-lg">
+          <div className="mt-5 w-full min-w-0 space-y-2.5 overflow-hidden">
+            <h3 className="max-w-full text-sm font-semibold leading-snug text-white [overflow-wrap:anywhere] [word-break:normal] sm:text-base lg:text-lg">
               {displayBrief.headline}
             </h3>
-            <p className="text-[13px] leading-relaxed text-white/70 [overflow-wrap:anywhere] sm:text-sm">
+            <p className="max-w-full whitespace-pre-line text-[13px] leading-relaxed text-white/70 [overflow-wrap:anywhere] [word-break:normal] sm:text-sm">
               {displayBrief.body}
             </p>
           </div>
         )}
       </div>
+      {/* Change end: keep AI brief copy readable without horizontal overflow */}
     </div>
   );
 }

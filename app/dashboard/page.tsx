@@ -9,8 +9,9 @@ import { QuickAskBar } from "@/components/dashboard/QuickAskBar";
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-5 pb-10 sm:space-y-7 lg:space-y-8">
-      <header className="space-y-1.5">
+    <div className="mx-auto w-full max-w-screen-2xl min-w-0 space-y-5 overflow-x-clip pb-10 sm:space-y-7 lg:space-y-8">
+      {/* Change start: mobile dashboard width containment */}
+      <header className="min-w-0 space-y-1.5">
         <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-cyan-300/70 sm:text-[11px]">
           Today on Velarith
         </p>
@@ -25,16 +26,17 @@ export default function DashboardPage() {
 
       <MoversRow />
 
-      <div className="grid gap-4 sm:gap-5 lg:grid-cols-3 lg:gap-6">
-        <div className="lg:col-span-2">
+      <div className="grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-3 lg:gap-6">
+        <div className="min-w-0 lg:col-span-2">
           <TrendingList />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-1">
+        <div className="grid min-w-0 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-1">
           <DailyBriefCard className="sm:col-span-2 lg:col-span-1" />
           <WatchlistSnapshot />
           <QuickAskBar />
         </div>
       </div>
+      {/* Change end: mobile dashboard width containment */}
     </div>
   );
 }

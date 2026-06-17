@@ -14,10 +14,12 @@ export default function DashboardLayout({
         Mobile:  top-16 (below 64px header), full width
         Desktop: top-0, left-20 (right of 80px sidebar)
       */}
-      <main className="fixed inset-0 top-16 overflow-y-auto overflow-x-hidden bg-background lg:left-20 lg:top-0">
-        <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 py-5 sm:py-6 lg:py-8 pb-safe">
+      <main className="fixed inset-0 top-16 max-w-full overflow-y-auto overflow-x-hidden bg-background lg:left-20 lg:top-0">
+        {/* Change start: keep dashboard content inside narrow mobile viewports */}
+        <div className="w-full max-w-full min-w-0 overflow-x-clip px-3 py-5 pb-safe min-[380px]:px-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
           {children}
         </div>
+        {/* Change end: keep dashboard content inside narrow mobile viewports */}
       </main>
     </>
   );

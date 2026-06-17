@@ -70,7 +70,7 @@ export function WatchlistSnapshot() {
 
   if (!hydrated) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+      <div className="w-full max-w-full min-w-0 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
         <div className="h-4 w-24 animate-pulse rounded bg-white/10" />
         <div className="mt-4 space-y-2">
           <div className="h-10 animate-pulse rounded-lg bg-white/5" />
@@ -83,16 +83,17 @@ export function WatchlistSnapshot() {
   const hasAny = markets.length > 0 || tickers.length > 0;
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-300/80">
-          <Star className="size-3.5 fill-current" />
+    <div className="w-full max-w-full min-w-0 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+      {/* Change start: constrain watchlist rows on phone screens */}
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-300/80 min-[380px]:text-[11px] min-[380px]:tracking-[0.2em]">
+          <Star className="size-3.5 shrink-0 fill-current" />
           Watchlist
         </div>
         {hasAny && (
           <Link
             href="/markets?tab=watchlist"
-            className="text-[11px] font-medium text-white/60 transition hover:text-white"
+            className="shrink-0 text-[11px] font-medium text-white/60 transition hover:text-white"
           >
             View all →
           </Link>
@@ -119,11 +120,12 @@ export function WatchlistSnapshot() {
           )}
         </div>
       )}
+      {/* Change end: constrain watchlist rows on phone screens */}
     </div>
   );
 }
 
-// --- Sub-components ----------------------------------------------------------
+// Sub-components
 
 function MarketRows({
   markets,
@@ -145,14 +147,17 @@ function MarketRows({
             <Link
               key={m.slug}
               href={`/markets/${m.slug}`}
-              className="flex min-h-[44px] items-center gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2 transition hover:border-white/15 hover:bg-white/[0.05] active:bg-white/[0.08]"
+              className="flex min-h-[44px] w-full min-w-0 items-center gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-2.5 py-2 transition hover:border-white/15 hover:bg-white/[0.05] active:bg-white/[0.08] min-[380px]:px-3"
             >
-              <CategoryBadge category={(live?.category ?? m.category) as MarketCategory} />
-              <span className="flex-1 truncate text-xs text-white/80">
+              <CategoryBadge
+                category={(live?.category ?? m.category) as MarketCategory}
+                className="shrink-0"
+              />
+              <span className="min-w-0 flex-1 truncate text-xs text-white/80">
                 {live?.question ?? m.question}
               </span>
               {live ? (
-                <div className="flex shrink-0 flex-col items-end text-[11px]">
+                <div className="flex w-12 shrink-0 flex-col items-end text-[10px] min-[380px]:w-14 min-[380px]:text-[11px]">
                   <span className="font-semibold text-emerald-300">
                     {formatPercent(live.yesPrice)}
                   </span>
@@ -166,7 +171,7 @@ function MarketRows({
                   </span>
                 </div>
               ) : (
-                <div className="h-7 w-12 animate-pulse rounded bg-white/5" />
+                <div className="h-7 w-12 shrink-0 animate-pulse rounded bg-white/5" />
               )}
             </Link>
           );
@@ -196,14 +201,14 @@ function TickerRows({
             <Link
               key={t.symbol}
               href={`/research?ticker=${t.symbol}`}
-              className="flex min-h-[40px] items-center gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2 transition hover:border-white/15 hover:bg-white/[0.05] active:bg-white/[0.08]"
+              className="flex min-h-[40px] w-full min-w-0 items-center gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-2.5 py-2 transition hover:border-white/15 hover:bg-white/[0.05] active:bg-white/[0.08] min-[380px]:px-3"
             >
               <div className="grid size-6 shrink-0 place-items-center rounded-md border border-cyan-500/30 bg-cyan-500/10 text-[9px] font-bold text-cyan-200">
                 {t.symbol.slice(0, 4)}
               </div>
-              <span className="flex-1 text-xs font-semibold text-white/80">${t.symbol}</span>
+              <span className="min-w-0 flex-1 truncate text-xs font-semibold text-white/80">${t.symbol}</span>
               {q ? (
-                <div className="flex shrink-0 flex-col items-end text-[11px]">
+                <div className="flex w-16 shrink-0 flex-col items-end text-[10px] min-[380px]:text-[11px]">
                   <span className="font-semibold text-white">${q.price.toFixed(2)}</span>
                   <span
                     className={cn(
@@ -216,7 +221,7 @@ function TickerRows({
                   </span>
                 </div>
               ) : (
-                <div className="h-7 w-14 animate-pulse rounded bg-white/5" />
+                <div className="h-7 w-14 shrink-0 animate-pulse rounded bg-white/5" />
               )}
             </Link>
           );
