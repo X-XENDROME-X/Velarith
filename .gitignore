@@ -6,11 +6,9 @@
 # Ignore the virtual environment
 backend/env
 
-# Ignore Python cache files
-backend/__pycache__/
-backend/blueprints/__pycache__/
-backend/blueprints/**/__pycache__/
-backend/*.pyc
+# Ignore Python cache files (anywhere in the tree)
+__pycache__/
+*.pyc
 
 # --- macOS ---
 # Ignore macOS system files
