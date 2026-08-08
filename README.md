@@ -4,7 +4,7 @@
   <img src="public/images/logo.jpg" alt="Velarith" width="280" />
 </p>
 
-Velarith is an AI-powered prediction market research tool built at the ASU Claude Builder Club Hackathon, Fall 2025. It pulls live market data, overlays stock technicals, fundamentals, and sentiment analysis, and lets you query a Claude-powered assistant with real market context already loaded in. The goal is to take a prediction market question and give you enough information to form a confident, reasoned position.
+Velarith is an AI-powered prediction market research tool built at the ASU Claude Builder Club Hackathon. It pulls live market data, overlays stock technicals, fundamentals, and sentiment analysis, and lets you query a Claude-powered assistant with real market context already loaded in. The goal is to take a prediction market question and give you enough information to form a confident, reasoned position.
 
 ## Pages
 
